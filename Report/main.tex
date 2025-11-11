@@ -1,0 +1,114 @@
+\documentclass[runningheads]{llncs}
+%
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{url}
+\usepackage{hyperref}
+
+\renewcommand\UrlFont{\color{blue}\rmfamily}
+
+\begin{document}
+%
+\title{Synthetic Financial Time-Series Generation: A Comparative Study of Diffusion Models and GANs for Market Data Augmentation}
+%
+\author{Huzaifa Nasir\inst{1} \and
+Maaz Ali\inst{1}
+}
+%
+\authorrunning{Huzaifa Nasir and Maaz Ali}
+%
+\institute{Department of Computer Science, National University of Computer and Emerging Sciences\\
+\email{\{i221053, i221042\}@nu.edu.pk}}
+%
+\maketitle
+%
+\begin{abstract}
+Financial markets generate complex time-series data with unique characteristics such as volatility clustering, fat-tailed distributions, and regime changes. Traditional machine learning models struggle with limited historical data, particularly for rare market events. This project proposes to investigate and compare modern generative models - specifically diffusion models and Generative Adversarial Networks (GANs) - for creating synthetic financial time-series data. We aim to evaluate their effectiveness in preserving statistical properties of real markets while enabling data augmentation for improved forecasting. Our approach includes comprehensive benchmarking against traditional methods including ARIMA, LSTM, Prophet, TimesFM, and TimesGPT, with evaluation using metrics such as MAPE and MAE. The project will employ STL decomposition for time-series analysis and assess practical utility through downstream financial applications.
+
+\keywords{Financial Time-Series \and Generative Models \and Diffusion Models \and GANs \and Data Augmentation}
+\end{abstract}
+
+\section{Project Description}
+\label{sec:description}
+
+\subsection{Problem Statement and Motivation}
+
+Financial time-series data is characterized by several unique properties that make it challenging for traditional machine learning approaches. These include non-stationarity, volatility clustering (where periods of high volatility are followed by high volatility), fat-tailed return distributions, and long-range dependencies \cite{cont2001empirical}\cite{mandelbrot1963variation}. Moreover, historical financial data is inherently limited, especially for rare but critical market events such as financial crises, flash crashes, or extreme volatility periods.
+
+The scarcity of historical data for extreme market conditions poses significant challenges for risk management models, which need to accurately estimate tail risks and stress-test portfolios under various market scenarios. Traditional approaches like bootstrap sampling or parametric models (e.g., GARCH) often fail to capture the full complexity of market dynamics \cite{engle1982autoregressive}\cite{bollerslev1986generalized}. Recent advances in financial machine learning \cite{prado2018advances} have highlighted the need for more sophisticated data generation techniques to address these limitations.
+
+Recent advances in generative artificial intelligence, particularly Generative Adversarial Networks \cite{goodfellow2014generative} and diffusion models \cite{ho2020denoising}, have shown remarkable capabilities in generating high-quality synthetic data across various domains. While these models were initially developed for image generation, they have been successfully adapted for time-series applications \cite{yoon2019time}\cite{tashiro2021csdi}.
+
+\subsection{Research Objectives}
+
+This project aims to develop and evaluate a comprehensive framework for synthetic financial time-series generation with the following key objectives:
+
+\begin{enumerate}
+\item \textbf{Model Exploration}: Investigate and compare state-of-the-art generative models including diffusion models and GANs for financial time-series data synthesis, determining their effectiveness in capturing unique statistical properties of financial markets.
+
+\item \textbf{Comprehensive Benchmarking}: Conduct thorough comparisons between generative approaches and traditional forecasting methods including ARIMA, LSTM, Prophet, TimesFM, and TimesGPT, evaluating their performance using metrics such as MAPE and MAE.
+
+\item \textbf{Financial Data Analysis}: Employ STL decomposition and other time-series analysis techniques to understand the underlying patterns in financial data and assess how well different generative models preserve these characteristics.
+
+\item \textbf{Practical Application}: Evaluate the utility of synthetic data in downstream financial tasks such as risk assessment, portfolio optimization, and forecasting, demonstrating real-world applicability.
+\end{enumerate}
+
+\subsection{Technical Approach}
+
+Our methodology will explore and compare multiple generative modeling paradigms for financial time-series synthesis:
+
+\textbf{Generative Model Investigation}: We will investigate both diffusion models and Generative Adversarial Networks (GANs) as potential approaches for financial time-series generation. Diffusion models, such as Denoising Diffusion Probabilistic Models (DDPM), offer stable training and high-quality generation through iterative denoising processes \cite{ho2020denoising}\cite{rasul2021autoregressive}. GANs, particularly TimeGAN and similar architectures, provide efficient generation through adversarial training while maintaining temporal dependencies \cite{yoon2019time} \cite{goodfellow2014generative}.
+
+\textbf{Baseline Model Comparison}: To establish comprehensive benchmarks, we will compare against various traditional and modern forecasting approaches including ARIMA models for classical time-series analysis \cite{box2015time}, LSTM networks for deep learning baselines \cite{hochreiter1997long}, Prophet for trend and seasonality modeling \cite{taylor2018forecasting}, TimesFM and TimesGPT for foundation model approaches \cite{das2023decoder} \cite{nixtla2023timesgpt}. Additionally, we will employ STL (Seasonal and Trend decomposition using Loess) for time-series decomposition analysis. Recent surveys on generative models for financial applications \cite{wiese2020quant}\cite{eckerli2021generative} and time-series generation \cite{zhang2023comprehensive} provide comprehensive background for our comparative analysis.
+
+\textbf{Evaluation Framework}: The project will utilize multiple evaluation metrics including Mean Absolute Percentage Error (MAPE) and Mean Absolute Error (MAE) for forecasting accuracy assessment, alongside statistical measures for distribution fidelity and financial stylized facts preservation. This comprehensive evaluation will guide the selection of the most suitable generative approach for financial data synthesis.
+
+\section{Main Functions and Expected Deliverables}
+\label{sec:functions}
+
+\subsection{Core System Functions}
+
+The proposed system will provide the following main functions:
+
+\textbf{1. Synthetic Data Generation}
+\begin{itemize}
+\item Generate realistic financial time-series data (daily/intraday frequencies)
+\item Support multiple asset classes (equities, indices, cryptocurrencies)
+\item Maintain statistical properties of real financial data
+\item Enable flexible generation based on different model architectures
+\end{itemize}
+
+\textbf{2. Comprehensive Model Evaluation}
+\begin{itemize}
+\item Statistical fidelity assessment using distribution tests and moment matching
+\item Performance evaluation using MAPE, MAE, and other forecasting metrics
+\item STL decomposition analysis for trend and seasonality preservation
+\item Comparison with baseline models (ARIMA, LSTM, Prophet, TimesFM, TimesGPT)
+\end{itemize}
+
+\textbf{3. Financial Data Analysis}
+\begin{itemize}
+\item Time-series decomposition and pattern analysis
+\item Financial stylized facts verification (volatility clustering, fat tails)
+\item Regime detection and market condition analysis
+\item Cross-validation and robustness testing
+\end{itemize}
+
+\textbf{4. Risk Management Applications}
+\begin{itemize}
+\item Value-at-Risk (VaR) estimation using synthetic scenarios
+\item Stress testing with generated extreme market conditions
+\item Portfolio optimization with augmented datasets
+\item Backtesting enhancement through synthetic historical data
+\end{itemize}
+
+
+
+%
+% ---- Bibliography ----
+%
+\bibliographystyle{splncs04}
+\bibliography{references}
+
+\end{document}
