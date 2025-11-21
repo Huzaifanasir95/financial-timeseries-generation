@@ -1,0 +1,11 @@
+Ticker,Rows,Start Date,End Date,Missing Values,Columns
+^GSPC,2515,2015-01-02,2024-12-30,0,"('Close', '^GSPC'), ('High', '^GSPC'), ('Low', '^GSPC'), ('Open', '^GSPC'), ('Volume', '^GSPC')"
+^IXIC,2515,2015-01-02,2024-12-30,0,"('Close', '^IXIC'), ('High', '^IXIC'), ('Low', '^IXIC'), ('Open', '^IXIC'), ('Volume', '^IXIC')"
+^DJI,2515,2015-01-02,2024-12-30,0,"('Close', '^DJI'), ('High', '^DJI'), ('Low', '^DJI'), ('Open', '^DJI'), ('Volume', '^DJI')"
+AAPL,2515,2015-01-02,2024-12-30,0,"('Close', 'AAPL'), ('High', 'AAPL'), ('Low', 'AAPL'), ('Open', 'AAPL'), ('Volume', 'AAPL')"
+MSFT,2515,2015-01-02,2024-12-30,0,"('Close', 'MSFT'), ('High', 'MSFT'), ('Low', 'MSFT'), ('Open', 'MSFT'), ('Volume', 'MSFT')"
+GOOGL,2515,2015-01-02,2024-12-30,0,"('Close', 'GOOGL'), ('High', 'GOOGL'), ('Low', 'GOOGL'), ('Open', 'GOOGL'), ('Volume', 'GOOGL')"
+AMZN,2515,2015-01-02,2024-12-30,0,"('Close', 'AMZN'), ('High', 'AMZN'), ('Low', 'AMZN'), ('Open', 'AMZN'), ('Volume', 'AMZN')"
+TSLA,2515,2015-01-02,2024-12-30,0,"('Close', 'TSLA'), ('High', 'TSLA'), ('Low', 'TSLA'), ('Open', 'TSLA'), ('Volume', 'TSLA')"
+BTC-USD,3652,2015-01-01,2024-12-30,0,"('Close', 'BTC-USD'), ('High', 'BTC-USD'), ('Low', 'BTC-USD'), ('Open', 'BTC-USD'), ('Volume', 'BTC-USD')"
+ETH-USD,2609,2017-11-09,2024-12-30,0,"('Close', 'ETH-USD'), ('High', 'ETH-USD'), ('Low', 'ETH-USD'), ('Open', 'ETH-USD'), ('Volume', 'ETH-USD')"

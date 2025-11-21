@@ -30,15 +30,7 @@ ENV/
 .ipynb_checkpoints
 *.ipynb_checkpoints/
 
-# Data files (keep structure, ignore large data)
-data/raw/*.csv
-data/raw/*.parquet
-data/processed/*.csv
-data/processed/*.parquet
-data/synthetic/*.csv
-data/synthetic/*.parquet
-data/external/*.csv
-data/external/*.parquet
+
 
 # Model files (large binary files)
 models/saved_models/*.pt
@@ -76,3 +68,4 @@ Thumbs.db
 
 # Keep directory structure
 !.gitkeep
+/data/processed
