@@ -72,3 +72,4 @@ data.zip
 setup_gpu_environment.ps1
 setup_gpu_environment_part2.ps1
 /all_notebook_outputs
+data/synthetic/diffusion/GSPC_synthetic.csv
