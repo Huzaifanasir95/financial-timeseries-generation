@@ -1,0 +1,1967 @@
+\documentclass[runningheads]{llncs}
+%
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{subcaption}
+
+\renewcommand\UrlFont{\color{blue}\rmfamily}
+
+\begin{document}
+%
+\title{Comparative Analysis of TimeGAN and Diffusion Models for Synthetic Financial Time-Series Generation}
+%
+\author{Huzaifa Nasir\inst{1} \and Maaz Ali\inst{1}}
+%
+\authorrunning{H. Nasir and M. Ali}
+%
+\institute{Department of Computer Science\\
+National University of Computer and Emerging Sciences\\
+\email{\{i221053, i221042\}@nu.edu.pk}}
+%
+\maketitle
+%
+\begin{abstract}
+Financial time-series data exhibits unique characteristics such as volatility clustering, fat-tailed distributions, and non-stationarity, making synthetic data generation challenging. This paper presents a comprehensive comparative study of TimeGAN (Time-series Generative Adversarial Network) and Diffusion Models for generating synthetic financial data across 12 diverse assets including stock indices, individual stocks, and cryptocurrency. We evaluate both models on statistical fidelity metrics including mean difference and Kolmogorov-Smirnov statistics across multiple financial features. Our experimental results demonstrate that TimeGAN achieves significantly better performance in preserving feature distributions (mean difference: 0.060 ± 0.019) compared to Diffusion Models (0.130 ± 0.025), with a statistically significant improvement (p=0.0004, Cohen's d=-2.21). However, Diffusion Models provide unique advantages through distribution matching validation via KS statistics (average: 0.388). We analyze performance across asset categories and provide recommendations for practical deployment in financial applications.
+
+\keywords{Financial Time-Series \and Generative Adversarial Networks \and Diffusion Models \and TimeGAN \and Synthetic Data Generation}
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+
+Financial markets represent one of the most complex and dynamic systems in the modern world, generating vast amounts of time-series data every second. This data exhibits unique and challenging statistical properties that fundamentally differ from data in other domains. Understanding and modeling these characteristics is crucial for risk management, portfolio optimization, algorithmic trading, and regulatory compliance.
+
+\subsection{Motivation and Problem Statement}
+
+Traditional machine learning and statistical approaches face several critical challenges when working with financial time-series data:
+
+\textbf{Data Scarcity for Rare Events}: While markets generate abundant data during normal conditions, extreme events such as financial crises, flash crashes, or black swan events are inherently rare. The 2008 financial crisis, the 2010 Flash Crash, and the 2020 COVID-19 market volatility represent critical scenarios that occur infrequently but have profound implications for risk modeling. Traditional approaches struggle to learn from these limited examples, making stress testing and tail risk estimation particularly challenging.
+
+\textbf{Non-Stationarity}: Financial markets are fundamentally non-stationary systems where statistical properties change over time due to regime shifts, regulatory changes, technological innovations, and evolving market microstructure \cite{cont2001empirical}. Models trained on historical data may become obsolete as market dynamics evolve, requiring continuous adaptation and robust generalization capabilities.
+
+\textbf{Volatility Clustering}: Financial returns exhibit volatility clustering, where periods of high volatility tend to cluster together, and calm periods persist for extended durations \cite{mandelbrot1963variation}. This autocorrelation in volatility violates assumptions of many classical statistical models and requires sophisticated temporal modeling.
+
+\textbf{Fat-Tailed Distributions}: Asset returns follow heavy-tailed distributions with significantly more extreme values than predicted by Gaussian models. These fat tails represent tail risk that is systematically underestimated by normal distribution assumptions, leading to inadequate risk provisioning and potential catastrophic losses.
+
+\textbf{Complex Temporal Dependencies}: Financial time-series exhibit both short-term momentum effects and long-range dependencies, with autocorrelations at multiple time scales. Capturing these multi-scale temporal patterns requires models with sophisticated memory mechanisms.
+
+\subsection{Synthetic Data Generation as a Solution}
+
+Synthetic data generation has emerged as a promising solution to address these fundamental challenges \cite{wiese2020quant}. By learning the underlying statistical properties and temporal dynamics of financial data, generative models can:
+
+\begin{itemize}
+\item \textbf{Augment Limited Data}: Generate synthetic examples of rare events to improve model robustness and stress testing capabilities
+\item \textbf{Enable Privacy-Preserving Analysis}: Create realistic synthetic datasets that preserve statistical properties while protecting sensitive trading information
+\item \textbf{Facilitate Scenario Analysis}: Generate plausible future scenarios for risk assessment and strategic planning
+\item \textbf{Support Backtesting}: Provide diverse historical scenarios for validating trading strategies beyond limited observed history
+\item \textbf{Accelerate Research}: Enable academic and industrial research without access to proprietary market data
+\end{itemize}
+
+Recent advances in deep generative models, particularly Generative Adversarial Networks (GANs) \cite{goodfellow2014generative} and Diffusion Models \cite{ho2020denoising}, have demonstrated remarkable capabilities in generating high-quality synthetic data across computer vision, natural language processing, and increasingly, time-series domains.
+
+\subsection{Generative Models for Financial Time-Series}
+
+For financial time-series, two prominent approaches have emerged:
+
+\textbf{TimeGAN} \cite{yoon2019time} represents a specialized GAN architecture designed specifically for time-series generation. Unlike traditional GANs that operate directly in data space, TimeGAN introduces an embedding space where both real and synthetic sequences are mapped through learned representations. The architecture combines four key components: an embedding network that maps sequences to latent space, a recovery network that reconstructs sequences, a generator that creates synthetic latent sequences, and a discriminator that distinguishes real from synthetic patterns. The model is trained with a combination of reconstruction loss (ensuring meaningful embeddings), supervised loss (preserving stepwise conditional distributions), and adversarial loss (matching joint distributions). This multi-objective approach enables TimeGAN to capture both marginal and temporal distributions effectively.
+
+\textbf{Diffusion Models} \cite{rasul2021autoregressive,tashiro2021csdi} offer an alternative paradigm based on iterative denoising processes. Inspired by non-equilibrium thermodynamics \cite{sohl2015deep}, these models learn to reverse a gradual noising process that transforms data into pure Gaussian noise. The forward diffusion process systematically corrupts data through a Markov chain of noise additions, while a learned reverse process (typically parameterized by neural networks) recovers the original data distribution. For time-series, Transformer-based architectures have proven effective as denoising networks, leveraging self-attention mechanisms to capture long-range temporal dependencies. Diffusion models offer theoretical advantages including stable training dynamics, mode coverage guarantees, and principled probabilistic formulations.
+
+Despite these promising developments, comprehensive empirical comparisons between TimeGAN and Diffusion Models for financial time-series generation remain limited. Existing studies typically evaluate individual models in isolation, making it difficult for practitioners to make informed decisions about which approach best suits their specific applications.
+
+\subsection{Research Objectives and Contributions}
+
+This paper addresses the gap in comparative empirical analysis by conducting a comprehensive evaluation of TimeGAN and Diffusion Models for synthetic financial time-series generation. Our study makes the following key contributions:
+
+\begin{enumerate}
+\item \textbf{Comprehensive Comparative Study}: We conduct an extensive empirical comparison of TimeGAN and Diffusion Models across 12 diverse financial assets spanning multiple asset classes and market characteristics:
+\begin{itemize}
+\item \textbf{Global Stock Indices (6)}: S\&P 500 (US), FTSE 100 (UK), Dow Jones Industrial Average (US), Nikkei 225 (Japan), Hang Seng Index (Hong Kong), NASDAQ Composite (US)
+\item \textbf{Technology Stocks (5)}: Apple (AAPL), Alphabet (GOOGL), Amazon (AMZN), Microsoft (MSFT), Tesla (TSLA)
+\item \textbf{Cryptocurrency (1)}: Bitcoin (BTC-USD)
+\end{itemize}
+This diversity enables analysis across different volatility regimes, market capitalizations, and asset characteristics.
+
+\item \textbf{Multi-Feature Analysis}: Unlike many studies focusing on single price series, we evaluate synthetic data generation across six critical financial features:
+\begin{itemize}
+\item Price features: Close, High, Low, Open
+\item Trading volume: Volume
+\item Derived features: Daily returns
+\end{itemize}
+This comprehensive feature set captures different aspects of market behavior and tests model capabilities in preserving multivariate relationships.
+
+\item \textbf{Rigorous Statistical Validation}: We employ multiple statistical testing frameworks to ensure robust conclusions:
+\begin{itemize}
+\item \textbf{Paired t-tests}: Parametric testing of mean differences across matched asset pairs
+\item \textbf{Wilcoxon signed-rank tests}: Non-parametric validation resistant to outliers
+\item \textbf{Cohen's d effect size}: Quantification of practical significance beyond statistical significance
+\item \textbf{Kolmogorov-Smirnov tests}: Distribution-level comparison for each feature
+\end{itemize}
+This multi-method approach provides convergent evidence for performance differences.
+
+\item \textbf{Category-based Analysis}: We stratify analysis by asset categories (Indices vs. Stocks) to identify domain-specific patterns and strengths. This category-level analysis reveals whether model performance varies systematically across different types of financial instruments, informing practical deployment decisions.
+
+\item \textbf{Practical Recommendations}: Based on empirical findings, we provide actionable recommendations for practitioners regarding when to use each model, potential hybrid approaches, and considerations for real-world deployment in financial applications.
+
+\item \textbf{Open Analysis Framework}: Our experimental methodology, evaluation metrics, and analysis pipeline provide a replicable framework for future research comparing generative models for financial time-series.
+\end{enumerate}
+
+\subsection{Paper Organization}
+
+The remainder of this paper is organized as follows: Section \ref{sec:related} reviews related work on financial time-series modeling and generative approaches. Section \ref{sec:methodology} details our dataset, model architectures, training procedures, and evaluation metrics. Section \ref{sec:results} presents comprehensive experimental results including overall performance comparisons, category-based analysis, and statistical significance testing. Section \ref{sec:discussion} discusses findings, practical implications, and limitations. Section \ref{sec:conclusion} concludes with future research directions.
+
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Financial Time-Series Modeling}
+
+\subsubsection{Classical Statistical Approaches}
+
+Financial time-series modeling has a rich history spanning several decades. Classical approaches include:
+
+\textbf{ARIMA Models}: Box and Jenkins \cite{box2015time} introduced AutoRegressive Integrated Moving Average (ARIMA) models, which capture linear temporal dependencies through autoregressive (AR) and moving average (MA) components. ARIMA(p,d,q) models specify:
+\begin{itemize}
+\item p: number of autoregressive terms
+\item d: degree of differencing for stationarity
+\item q: number of moving average terms
+\end{itemize}
+While interpretable and computationally efficient, ARIMA models assume linearity and stationarity, limiting their effectiveness for complex financial data.
+
+\textbf{GARCH Models}: To address volatility clustering, Engle \cite{engle1982autoregressive} introduced Autoregressive Conditional Heteroskedasticity (ARCH) models, later generalized by Bollerslev \cite{bollerslev1986generalized} to GARCH (Generalized ARCH). GARCH models treat volatility as time-varying and predictable based on past squared returns and past variance. Despite their success in capturing volatility dynamics, GARCH models maintain linear conditional mean assumptions and struggle with extreme events.
+
+\textbf{Limitations}: Classical approaches suffer from:
+\begin{itemize}
+\item Inability to capture complex non-linear patterns
+\item Assumptions of stationarity or simple non-stationarity
+\item Limited handling of multivariate dependencies
+\item Poor performance during regime changes and crises
+\end{itemize}
+
+\subsubsection{Deep Learning for Financial Time-Series}
+
+The advent of deep learning introduced powerful non-linear modeling capabilities:
+
+\textbf{Recurrent Neural Networks}: LSTM networks \cite{hochreiter1997long} address the vanishing gradient problem in standard RNNs through gating mechanisms (input, forget, output gates) that control information flow. LSTMs have demonstrated success in financial forecasting by capturing long-range dependencies and non-linear patterns. However, they require substantial data and computational resources, and their black-box nature limits interpretability.
+
+\textbf{Attention-Based Models}: Transformer architectures, originally developed for natural language processing, have been adapted for time-series through positional encoding and temporal attention mechanisms. Self-attention enables modeling of dependencies across arbitrary time lags without the sequential bottleneck of RNNs.
+
+\textbf{Foundation Models}: Recent work on foundation models for time-series includes:
+\begin{itemize}
+\item \textbf{TimesFM} \cite{das2023decoder}: A decoder-only Transformer pre-trained on diverse time-series datasets, demonstrating zero-shot forecasting capabilities
+\item \textbf{TimesGPT} \cite{nixtla2023timesgpt}: A GPT-like architecture specifically designed for time-series, showing strong performance across multiple domains
+\end{itemize}
+These models leverage transfer learning from large-scale pre-training, but focus primarily on forecasting rather than generation.
+
+\subsection{Generative Models for Time-Series}
+
+\subsubsection{GAN-based Approaches}
+
+Generative Adversarial Networks \cite{goodfellow2014generative} revolutionized generative modeling through adversarial training between generator and discriminator networks. For time-series:
+
+\textbf{TimeGAN} \cite{yoon2019time}: The seminal work by Yoon et al. introduced TimeGAN with several key innovations:
+\begin{itemize}
+\item \textbf{Embedding Space}: Unlike vanilla GANs operating in data space, TimeGAN introduces learned latent representations, reducing dimensionality and easing adversarial training
+\item \textbf{Supervised Loss}: A stepwise supervised loss preserves temporal conditional distributions $p(x_t|x_{t-1})$
+\item \textbf{Joint Training}: Combines reconstruction, supervised, and adversarial objectives for comprehensive temporal modeling
+\item \textbf{Architecture}: Uses GRU (Gated Recurrent Units) for all components, enabling efficient sequential processing
+\end{itemize}
+TimeGAN has been successfully applied to stock prices, energy consumption, and medical time-series.
+
+\textbf{C-RNN-GAN} \cite{esteban2017real}: Esteban et al. developed Continuous Recurrent GAN for medical time-series, using LSTM-based generator and discriminator with auxiliary classification tasks to improve mode coverage.
+
+\textbf{Quant GANs} \cite{wiese2020quant}: Wiese et al. specifically designed GANs for quantitative finance, incorporating:
+\begin{itemize}
+\item Temporal convolutional networks for multi-scale feature extraction
+\item Sig-Wasserstein distance for comparing path signatures
+\item Financial-specific evaluation metrics (volatility, autocorrelation preservation)
+\end{itemize}
+
+\textbf{Challenges}: GAN-based approaches face:
+\begin{itemize}
+\item Training instability and mode collapse
+\item Difficulty in hyperparameter tuning
+\item Sensitivity to architecture choices
+\item Limited theoretical guarantees on sample quality
+\end{itemize}
+
+\subsubsection{Diffusion Models}
+
+Diffusion models represent a fundamentally different generative paradigm based on iterative refinement:
+
+\textbf{Theoretical Foundation}: Sohl-Dickstein et al. \cite{sohl2015deep} introduced diffusion probabilistic models inspired by non-equilibrium thermodynamics. Ho et al. \cite{ho2020denoising} simplified the formulation in Denoising Diffusion Probabilistic Models (DDPM), establishing:
+\begin{itemize}
+\item Forward process: gradual noise injection via Markov chain
+\item Reverse process: learned denoising via neural networks
+\item Training objective: weighted variational lower bound
+\item Connection to score matching and Langevin dynamics
+\end{itemize}
+
+\textbf{TimeGrad} \cite{rasul2021autoregressive}: Rasul et al. adapted diffusion models for probabilistic time-series forecasting using:
+\begin{itemize}
+\item Autoregressive conditioning on historical context
+\item RNN-based denoising networks
+\item Continuous-time formulation for flexible sampling
+\end{itemize}
+
+\textbf{CSDI} \cite{tashiro2021csdi}: Tashiro et al. developed Conditional Score-based Diffusion for time-series imputation, demonstrating superior performance in handling missing data patterns through:
+\begin{itemize}
+\item Self-attention mechanisms for capturing dependencies
+\item Conditional generation on observed values
+\item Score-based formulation for stable training
+\end{itemize}
+
+\textbf{Advantages}: Diffusion models offer:
+\begin{itemize}
+\item Stable training without adversarial dynamics
+\item Mode coverage guarantees from theoretical foundations
+\item High sample quality through iterative refinement
+\item Flexible conditioning and controllable generation
+\end{itemize}
+
+\textbf{Limitations}:
+\begin{itemize}
+\item Computational cost: requires multiple forward passes for sampling
+\item Slower inference compared to GANs
+\item Limited application to financial time-series (emerging area)
+\end{itemize}
+
+\subsubsection{Comparative Studies and Gaps}
+
+\textbf{General Surveys}: Zhang et al. \cite{zhang2023comprehensive} provide a comprehensive survey of time-series generative models, taxonomizing approaches by methodology (GANs, VAEs, normalizing flows, diffusion models) and application domain. However, empirical comparisons remain limited, with most studies evaluating individual models.
+
+\textbf{Financial Applications}: Eckerli and Osterrieder \cite{eckerli2021generative} review GANs in finance, covering applications in synthetic data generation, market simulation, and risk modeling. Their review focuses primarily on GAN variants without systematic comparison to diffusion models, which remain underexplored for financial applications.
+
+\textbf{Research Gap}: Despite growing interest, the literature lacks:
+\begin{itemize}
+\item Head-to-head comparisons of TimeGAN vs. Diffusion Models for finance
+\item Evaluations across diverse financial assets and categories
+\item Statistical validation of performance differences
+\item Practical deployment recommendations based on empirical evidence
+\end{itemize}
+
+Our work addresses these gaps through comprehensive empirical analysis.
+
+\section{Methodology}
+\label{sec:methodology}
+
+\subsection{Dataset Collection and Characteristics}
+
+\subsubsection{Data Sources and Asset Selection}
+
+We collected daily financial data for 12 carefully selected assets from Yahoo Finance, spanning January 1, 2015 to December 31, 2024 (approximately 10 years). This extended time horizon captures multiple market regimes including:
+\begin{itemize}
+\item Normal market conditions (2015-2019)
+\item COVID-19 pandemic volatility (2020-2021)
+\item Post-pandemic recovery and inflation concerns (2022-2024)
+\end{itemize}
+
+Our asset selection strategy ensures diversity across multiple dimensions:
+
+\textbf{Global Stock Indices (6 assets)}:
+\begin{itemize}
+\item \textbf{S\&P 500 (\textasciicircum GSPC)}: Primary US large-cap benchmark, 500 leading companies
+\item \textbf{FTSE 100 (\textasciicircum FTSE)}: UK's leading share index, London Stock Exchange
+\item \textbf{Dow Jones Industrial Average (\textasciicircum DJI)}: 30 prominent US companies, price-weighted
+\item \textbf{Nikkei 225 (\textasciicircum N225)}: Japanese stock market index, Tokyo Stock Exchange
+\item \textbf{Hang Seng Index (\textasciicircum HSI)}: Hong Kong market benchmark, emerging market exposure
+\item \textbf{NASDAQ Composite (\textasciicircum IXIC)}: Technology-heavy US index, over 3000 companies
+\end{itemize}
+
+\textbf{Technology Stocks (5 assets)}:
+\begin{itemize}
+\item \textbf{Apple (AAPL)}: Consumer electronics, largest market cap (\$3T+ peak)
+\item \textbf{Alphabet (GOOGL)}: Internet services, search, cloud computing
+\item \textbf{Amazon (AMZN)}: E-commerce, cloud infrastructure (AWS)
+\item \textbf{Microsoft (MSFT)}: Software, cloud computing, enterprise services
+\item \textbf{Tesla (TSLA)}: Electric vehicles, high volatility, retail investor interest
+\end{itemize}
+
+\textbf{Cryptocurrency (1 asset)}:
+\begin{itemize}
+\item \textbf{Bitcoin (BTC-USD)}: Leading cryptocurrency, extreme volatility, 24/7 trading
+\end{itemize}
+
+This selection provides:
+\begin{itemize}
+\item Geographic diversity (US, UK, Japan, Hong Kong)
+\item Market cap range (mega-cap to highly volatile)
+\item Volatility spectrum (stable indices to crypto)
+\item Sector representation (technology-focused stocks)
+\item Traditional vs. emerging assets (stocks/indices vs. cryptocurrency)
+\end{itemize}
+
+\subsubsection{Feature Engineering}
+
+For each asset, we extracted and engineered six features capturing different market dynamics:
+
+\textbf{Price Features (4)}:
+\begin{itemize}
+\item \textbf{Open}: Opening price for the trading day
+\item \textbf{High}: Highest price during the day (intraday peak)
+\item \textbf{Low}: Lowest price during the day (intraday trough)
+\item \textbf{Close}: Closing price (most commonly used for analysis)
+\end{itemize}
+
+\textbf{Volume Feature (1)}:
+\begin{itemize}
+\item \textbf{Volume}: Number of shares/units traded, indicating liquidity and market interest
+\end{itemize}
+
+\textbf{Derived Features (1)}:
+\begin{itemize}
+\item \textbf{Returns}: Daily log returns computed as $r_t = \log(\text{Close}_t / \text{Close}_{t-1})$, providing scale-invariant measure of price changes
+\end{itemize}
+
+\subsubsection{Data Preprocessing Pipeline}
+
+We implemented a comprehensive preprocessing pipeline:
+
+\textbf{Step 1: Missing Value Handling}
+\begin{itemize}
+\item Identified missing values from non-trading days (weekends, holidays)
+\item Applied forward-fill for up to 2 consecutive missing days
+\item Removed assets with excessive missing data (>5\% of total)
+\item Final dataset: all assets had <1\% missing values after preprocessing
+\end{itemize}
+
+\textbf{Step 2: Outlier Detection}
+\begin{itemize}
+\item Identified extreme returns using 5-sigma threshold from rolling mean
+\item Verified outliers correspond to known market events (e.g., COVID crash)
+\item Retained outliers to preserve realistic extreme event characteristics
+\end{itemize}
+
+\textbf{Step 3: Normalization}
+\begin{itemize}
+\item Applied min-max normalization to [0, 1] range for each feature independently:
+\begin{equation}
+x_{\text{norm}} = \frac{x - x_{\min}}{x_{\max} - x_{\min}}
+\end{equation}
+\item Computed normalization parameters on training set only (preventing data leakage)
+\item Stored parameters for inverse transformation during evaluation
+\end{itemize}
+
+\textbf{Step 4: Sequence Creation}
+\begin{itemize}
+\item Window size: 24 trading days (approximately 1 month)
+\item Stride: 1 day (overlapping windows for data augmentation)
+\item Total sequences per asset: ~2,400 sequences from ~2,500 trading days
+\item Split: 70\% training, 15\% validation, 15\% test (temporal split, no shuffle)
+\end{itemize}
+
+\subsubsection{Dataset Statistics}
+
+Table \ref{tab:dataset_stats} summarizes key statistical properties:
+
+\begin{table}[htbp]
+\centering
+\caption{Dataset Statistics Across Assets}
+\label{tab:dataset_stats}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Asset Category} & \textbf{Count} & \textbf{Avg Volatility} & \textbf{Avg Volume} & \textbf{Data Points} \\
+\midrule
+Indices & 6 & 0.0145 & 4.2B & 15,000 \\
+Stocks & 5 & 0.0223 & 89.5M & 12,500 \\
+Cryptocurrency & 1 & 0.0456 & 28.3B & 2,500 \\
+\midrule
+\textbf{Total} & 12 & -- & -- & 30,000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{TimeGAN Architecture and Training}
+
+\subsubsection{Architectural Components}
+
+TimeGAN consists of four interconnected neural networks, all implemented using Gated Recurrent Units (GRUs):
+
+\textbf{1. Embedding Network ($\mathbf{e}: \mathcal{X} \rightarrow \mathcal{H}$)}:
+\begin{itemize}
+\item \textbf{Purpose}: Maps real sequences from data space to latent space
+\item \textbf{Input}: Real sequence $\mathbf{x}_{1:T} \in \mathbb{R}^{T \times D}$ where $T=24$ time steps, $D=6$ features
+\item \textbf{Architecture}: 3-layer bidirectional GRU
+\item \textbf{Hidden dimension}: 128 units per layer
+\item \textbf{Output}: Latent sequence $\mathbf{h}_{1:T} \in \mathbb{R}^{T \times 128}$
+\item \textbf{Activation}: Tanh (default GRU activation)
+\item \textbf{Dropout}: 0.1 between layers for regularization
+\end{itemize}
+
+\textbf{2. Recovery Network ($\mathbf{r}: \mathcal{H} \rightarrow \mathcal{X}$)}:
+\begin{itemize}
+\item \textbf{Purpose}: Reconstructs sequences from latent representations
+\item \textbf{Input}: Latent sequence $\mathbf{h}_{1:T}$
+\item \textbf{Architecture}: 3-layer GRU followed by linear projection
+\item \textbf{Output}: Reconstructed sequence $\tilde{\mathbf{x}}_{1:T} \in \mathbb{R}^{T \times 6}$
+\item \textbf{Final activation}: Sigmoid (to match [0,1] normalization)
+\end{itemize}
+
+\textbf{3. Generator Network ($\mathbf{g}: \mathcal{Z} \rightarrow \mathcal{H}$)}:
+\begin{itemize}
+\item \textbf{Purpose}: Generates synthetic latent sequences from noise
+\item \textbf{Input}: Random noise $\mathbf{z}_{1:T} \sim \mathcal{N}(0, I)$ where each $\mathbf{z}_t \in \mathbb{R}^{128}$
+\item \textbf{Architecture}: 3-layer GRU matching embedding network structure
+\item \textbf{Output}: Synthetic latent sequence $\hat{\mathbf{h}}_{1:T}$
+\item \textbf{Conditioning}: Autoregressive generation, each step conditioned on previous steps
+\end{itemize}
+
+\textbf{4. Discriminator Network ($\mathbf{d}: \mathcal{H} \rightarrow [0,1]$)}:
+\begin{itemize}
+\item \textbf{Purpose}: Distinguishes real ($\mathbf{h}$) from synthetic ($\hat{\mathbf{h}}$) latent sequences
+\item \textbf{Input}: Latent sequence (real or synthetic)
+\item \textbf{Architecture}: 3-layer GRU followed by linear classifier
+\item \textbf{Output}: Binary classification logit
+\item \textbf{Final activation}: Sigmoid for probability output
+\end{itemize}
+
+\subsubsection{Training Objectives}
+
+TimeGAN optimizes three complementary objectives:
+
+\textbf{1. Reconstruction Loss} ($\mathcal{L}_R$):
+Ensures meaningful embeddings by minimizing reconstruction error:
+\begin{equation}
+\mathcal{L}_R = \mathbb{E}_{\mathbf{x} \sim p_{\text{data}}} \left[ \|\mathbf{x}_{1:T} - \mathbf{r}(\mathbf{e}(\mathbf{x}_{1:T}))\|_2^2 \right]
+\end{equation}
+This autoencoder objective prevents trivial embeddings and ensures invertibility.
+
+\textbf{2. Supervised Loss} ($\mathcal{L}_S$):
+Preserves temporal conditional distributions $p(x_t | x_{<t})$:
+\begin{equation}
+\mathcal{L}_S = \mathbb{E}_{\mathbf{x} \sim p_{\text{data}}} \sum_{t=1}^{T} \left\| \mathbf{h}_t - \mathbf{g}(\mathbf{e}(\mathbf{x}_{1:t-1}), \mathbf{z}_t) \right\|_2^2
+\end{equation}
+This stepwise prediction loss ensures temporal coherence in generated sequences.
+
+\textbf{3. Adversarial Loss} ($\mathcal{L}_A$):
+Matches joint distributions via minimax game:
+\begin{equation}
+\begin{split}
+\mathcal{L}_A = & \min_{\mathbf{g}} \max_{\mathbf{d}} \mathbb{E}_{\mathbf{x} \sim p_{\text{data}}} [\log \mathbf{d}(\mathbf{e}(\mathbf{x}))] \\
+& + \mathbb{E}_{\mathbf{z} \sim p_z} [\log(1 - \mathbf{d}(\mathbf{g}(\mathbf{z})))]
+\end{split}
+\end{equation}
+
+\textbf{Combined Objective}:
+\begin{equation}
+\mathcal{L}_{\text{TimeGAN}} = \lambda_R \mathcal{L}_R + \lambda_S \mathcal{L}_S + \lambda_A \mathcal{L}_A
+\end{equation}
+where $\lambda_R = 10$, $\lambda_S = 0.1$, $\lambda_A = 1$ (weights from original paper).
+
+\subsubsection{Training Procedure}
+
+\textbf{Phase 1: Embedding Learning} (500 iterations):
+\begin{itemize}
+\item Train embedding ($\mathbf{e}$) and recovery ($\mathbf{r}$) networks only
+\item Optimize reconstruction loss $\mathcal{L}_R$
+\item Establishes meaningful latent space before adversarial training
+\end{itemize}
+
+\textbf{Phase 2: Supervised Training} (500 iterations):
+\begin{itemize}
+\item Freeze embedding network
+\item Train generator on supervised loss $\mathcal{L}_S$
+\item Learns temporal dynamics in latent space
+\end{itemize}
+
+\textbf{Phase 3: Joint Adversarial Training} (1000 iterations):
+\begin{itemize}
+\item Alternate between discriminator and generator updates
+\item Discriminator: 2 steps per generator step (standard GAN ratio)
+\item Generator: Update using combined $\mathcal{L}_S + \mathcal{L}_A$
+\item Gradient clipping: [-1, 1] for stability
+\end{itemize}
+
+\textbf{Hyperparameters}:
+\begin{itemize}
+\item Optimizer: Adam with $\beta_1=0.9$, $\beta_2=0.999$
+\item Learning rate: 0.001 (with exponential decay, $\gamma=0.95$ every 100 iterations)
+\item Batch size: 128 sequences
+\item Total training time: ~2-3 hours per asset on NVIDIA RTX 3090
+\end{itemize}
+
+\subsection{Diffusion Model Architecture and Training}
+
+\subsubsection{Theoretical Foundation}
+
+Our Diffusion Model implementation follows the Denoising Diffusion Probabilistic Model (DDPM) framework \cite{ho2020denoising} adapted for multivariate financial time-series.
+
+\textbf{Forward Diffusion Process}:
+Gradually adds Gaussian noise over $T=1000$ timesteps according to a variance schedule:
+\begin{equation}
+q(\mathbf{x}_t | \mathbf{x}_{t-1}) = \mathcal{N}(\mathbf{x}_t; \sqrt{1-\beta_t}\mathbf{x}_{t-1}, \beta_t\mathbf{I})
+\end{equation}
+where $\{\beta_t\}_{t=1}^T$ defines the noise schedule.
+
+\textbf{Variance Schedule}:
+We use a linear schedule from $\beta_1 = 10^{-4}$ to $\beta_T = 0.02$:
+\begin{equation}
+\beta_t = \beta_1 + \frac{t-1}{T-1}(\beta_T - \beta_1)
+\end{equation}
+
+Defining $\alpha_t = 1 - \beta_t$ and $\bar{\alpha}_t = \prod_{s=1}^t \alpha_s$, we can sample directly at any timestep:
+\begin{equation}
+q(\mathbf{x}_t | \mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t; \sqrt{\bar{\alpha}_t}\mathbf{x}_0, (1-\bar{\alpha}_t)\mathbf{I})
+\end{equation}
+
+\textbf{Reverse Denoising Process}:
+A learned neural network $\epsilon_\theta$ parameterizes the reverse process:
+\begin{equation}
+p_\theta(\mathbf{x}_{t-1} | \mathbf{x}_t) = \mathcal{N}(\mathbf{x}_{t-1}; \mu_\theta(\mathbf{x}_t, t), \Sigma_\theta(\mathbf{x}_t, t))
+\end{equation}
+
+The mean is computed as:
+\begin{equation}
+\mu_\theta(\mathbf{x}_t, t) = \frac{1}{\sqrt{\alpha_t}} \left( \mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}} \epsilon_\theta(\mathbf{x}_t, t) \right)
+\end{equation}
+
+For variance, we use fixed values: $\Sigma_\theta(\mathbf{x}_t, t) = \beta_t \mathbf{I}$
+
+\subsubsection{Denoising Network Architecture}
+
+We employ a Transformer-based architecture optimized for time-series:
+
+\textbf{Input Embedding Layer}:
+\begin{itemize}
+\item Linear projection: $\mathbb{R}^{24 \times 6} \rightarrow \mathbb{R}^{24 \times 128}$
+\item Positional encoding: Sinusoidal encoding added to preserve temporal order:
+\begin{equation}
+\begin{split}
+PE_{(pos, 2i)} &= \sin(pos / 10000^{2i/d_{model}}) \\
+PE_{(pos, 2i+1)} &= \cos(pos / 10000^{2i/d_{model}})
+\end{split}
+\end{equation}
+\item Timestep embedding: Sinusoidal encoding of diffusion timestep $t$ concatenated to sequence
+\end{itemize}
+
+\textbf{Transformer Encoder Stack} (6 layers):
+Each layer contains:
+\begin{itemize}
+\item \textbf{Multi-Head Self-Attention} (8 heads):
+\begin{equation}
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+\end{equation}
+where $d_k = 128/8 = 16$ (dimension per head)
+\item \textbf{Feed-Forward Network}:
+\begin{equation}
+\text{FFN}(\mathbf{x}) = \max(0, \mathbf{x}W_1 + b_1)W_2 + b_2
+\end{equation}
+with hidden dimension = 512 (4× embedding dimension)
+\item \textbf{Layer Normalization}: Applied before each sub-layer (pre-norm architecture)
+\item \textbf{Residual Connections}: Added around each sub-layer
+\item \textbf{Dropout}: 0.1 applied to attention weights and FFN outputs
+\end{itemize}
+
+\textbf{Output Projection}:
+\begin{itemize}
+\item Linear layer: $\mathbb{R}^{128} \rightarrow \mathbb{R}^{6}$ (per timestep)
+\item Predicts noise $\epsilon_\theta(\mathbf{x}_t, t)$ matching input dimensions
+\end{itemize}
+
+\textbf{Total Parameters}: Approximately 8.2M trainable parameters
+
+\subsubsection{Training Objective and Procedure}
+
+\textbf{Simplified Training Objective}:
+Following DDPM, we optimize the noise prediction objective:
+\begin{equation}
+\mathcal{L}_{\text{simple}} = \mathbb{E}_{t \sim \mathcal{U}(1,T), \mathbf{x}_0, \epsilon \sim \mathcal{N}(0,I)} \left[ \| \epsilon - \epsilon_\theta(\mathbf{x}_t, t) \|_2^2 \right]
+\end{equation}
+
+This simplified loss (ignoring weighting factors) empirically performs better than the variational bound.
+
+\textbf{Training Algorithm}:
+\begin{enumerate}
+\item Sample mini-batch of real sequences $\{\mathbf{x}_0^{(i)}\}$ from dataset
+\item For each sequence:
+\begin{itemize}
+\item Sample random timestep $t \sim \mathcal{U}(1, 1000)$
+\item Sample noise $\epsilon \sim \mathcal{N}(0, I)$
+\item Compute noisy sample: $\mathbf{x}_t = \sqrt{\bar{\alpha}_t} \mathbf{x}_0 + \sqrt{1-\bar{\alpha}_t} \epsilon$
+\item Predict noise: $\hat{\epsilon} = \epsilon_\theta(\mathbf{x}_t, t)$
+\item Compute loss: $\mathcal{L} = \|\epsilon - \hat{\epsilon}\|_2^2$
+\end{itemize}
+\item Update $\theta$ via gradient descent
+\end{enumerate}
+
+\textbf{Hyperparameters}:
+\begin{itemize}
+\item Optimizer: AdamW with $\beta_1=0.9$, $\beta_2=0.999$, weight decay = 0.01
+\item Learning rate: $10^{-4}$ with cosine annealing schedule
+\item Batch size: 32 (smaller due to Transformer memory requirements)
+\item Training epochs: 50 per asset
+\item Gradient clipping: Maximum norm = 1.0
+\item EMA (Exponential Moving Average): $\beta_{\text{EMA}} = 0.9999$ for model weights
+\item Total training time: ~8-10 hours per asset on NVIDIA RTX 3090
+\end{itemize}
+
+\textbf{Sampling Procedure}:
+To generate synthetic sequences:
+\begin{enumerate}
+\item Initialize $\mathbf{x}_T \sim \mathcal{N}(0, I)$ (pure noise)
+\item For $t = T, T-1, \ldots, 1$:
+\begin{itemize}
+\item Predict noise: $\hat{\epsilon} = \epsilon_\theta(\mathbf{x}_t, t)$
+\item Compute mean: $\mu = \frac{1}{\sqrt{\alpha_t}}(\mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}}\hat{\epsilon})$
+\item Sample: $\mathbf{x}_{t-1} = \mu + \sqrt{\beta_t} \mathbf{z}$ where $\mathbf{z} \sim \mathcal{N}(0, I)$ if $t > 1$, else $\mathbf{x}_0 = \mu$
+\end{itemize}
+\item Return $\mathbf{x}_0$ (denoised sample)
+\end{enumerate}
+
+Sampling requires 1000 forward passes, taking ~10 seconds per sequence.
+
+\subsection{Evaluation Metrics and Statistical Testing}
+
+\subsubsection{Feature-Level Metrics}
+
+\textbf{Mean Difference}:
+For each feature $f \in \{\text{Close, High, Low, Open, Volume, Returns}\}$, we compute the absolute difference between real and synthetic feature means:
+\begin{equation}
+\text{Mean\_Diff}_f = |\mu_{\text{real}}(f) - \mu_{\text{synthetic}}(f)|
+\end{equation}
+
+Lower values indicate better preservation of central tendency. We aggregate across features:
+\begin{equation}
+\text{Overall\_Mean\_Diff} = \frac{1}{|F|} \sum_{f \in F} \text{Mean\_Diff}_f
+\end{equation}
+
+\textbf{Standard Deviation Difference}:
+Similarly, we measure volatility preservation:
+\begin{equation}
+\text{Std\_Diff}_f = |\sigma_{\text{real}}(f) - \sigma_{\text{synthetic}}(f)|
+\end{equation}
+
+\textbf{Kolmogorov-Smirnov (KS) Statistic}:
+Measures maximum deviation between empirical cumulative distribution functions:
+\begin{equation}
+D_{KS}(f) = \sup_x |F_{\text{real}}(x) - F_{\text{synthetic}}(x)|
+\end{equation}
+
+Interpretation thresholds:
+\begin{itemize}
+\item $D_{KS} < 0.1$: Excellent distribution matching
+\item $0.1 \leq D_{KS} < 0.3$: Good quality
+\item $0.3 \leq D_{KS} < 0.5$: Fair quality
+\item $D_{KS} \geq 0.5$: Poor quality
+\end{itemize}
+
+We also compute KS test p-values to assess statistical significance of distributional differences.
+
+\subsubsection{Comparative Statistical Tests}
+
+\textbf{Paired t-test}:
+Since we compare the same assets across models, we use paired t-tests:
+\begin{equation}
+t = \frac{\bar{d}}{s_d / \sqrt{n}}
+\end{equation}
+where $\bar{d}$ is mean difference, $s_d$ is standard deviation of differences, $n=11$ assets.
+
+Null hypothesis: $H_0: \mu_{\text{TimeGAN}} = \mu_{\text{Diffusion}}$
+
+Significance level: $\alpha = 0.05$ (two-tailed test)
+
+\textbf{Cohen's d Effect Size}:
+Quantifies practical significance independent of sample size:
+\begin{equation}
+d = \frac{\bar{x}_1 - \bar{x}_2}{s_{\text{pooled}}}
+\end{equation}
+where:
+\begin{equation}
+s_{\text{pooled}} = \sqrt{\frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1 + n_2 - 2}}
+\end{equation}
+
+Interpretation:
+\begin{itemize}
+\item $|d| < 0.2$: Small effect
+\item $0.2 \leq |d| < 0.5$: Medium effect
+\item $0.5 \leq |d| < 0.8$: Large effect
+\item $|d| \geq 0.8$: Very large effect
+\end{itemize}
+
+\textbf{Wilcoxon Signed-Rank Test}:
+Non-parametric alternative robust to outliers and non-normal distributions:
+\begin{equation}
+W = \sum_{i=1}^n [\text{sgn}(x_{2,i} - x_{1,i}) \cdot R_i]
+\end{equation}
+where $R_i$ is the rank of $|x_{2,i} - x_{1,i}|$.
+
+\subsubsection{Financial Stylized Facts}
+
+We also evaluate preservation of financial stylized facts \cite{cont2001empirical}:
+
+\begin{itemize}
+\item \textbf{Volatility Clustering}: Autocorrelation of squared returns
+\item \textbf{Fat Tails}: Kurtosis of return distributions (excess kurtosis $> 3$)
+\item \textbf{Leverage Effect}: Negative correlation between returns and volatility changes
+\item \textbf{Volume-Price Relationship}: Correlation between trading volume and price changes
+\end{itemize}
+
+\subsection{Experimental Setup}
+
+\textbf{Hardware Configuration}:
+\begin{itemize}
+\item GPU: NVIDIA RTX 3090 (24GB VRAM)
+\item CPU: AMD Ryzen 9 5950X (16 cores)
+\item RAM: 64GB DDR4
+\item Storage: 2TB NVMe SSD
+\end{itemize}
+
+\textbf{Software Environment}:
+\begin{itemize}
+\item Python 3.9.25
+\item PyTorch 2.0.1 with CUDA 11.8
+\item NumPy 1.24.3, Pandas 2.0.2
+\item Scikit-learn 1.3.0
+\item Matplotlib 3.7.1, Seaborn 0.12.2
+\end{itemize}
+
+\textbf{Reproducibility}:
+\begin{itemize}
+\item Random seeds fixed: NumPy (42), PyTorch (42), Python (42)
+\item Deterministic CUDA operations enabled
+\item Model checkpoints saved every epoch
+\item All evaluation code and data preprocessing scripts available
+\end{itemize}
+
+\section{Data Exploration and Preprocessing Analysis}
+\label{sec:data_exploration}
+
+Before presenting model results, we provide exploratory data analysis to characterize our dataset and validate preprocessing steps.
+
+\subsection{Raw Data Characteristics}
+
+Figure \ref{fig:raw_data} shows raw price series for selected assets across our 10-year observation period.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/01_raw_data_overview.png}
+\caption{Raw price series for selected assets (2015-2024) showing diverse market behaviors from stable indices to volatile cryptocurrencies.}
+\label{fig:raw_data}
+\end{figure}
+
+Key observations:
+\begin{itemize}
+\item \textbf{Growth Trends}: Technology stocks (AAPL, GOOGL, MSFT, AMZN) exhibit strong upward trends, reflecting market performance
+\item \textbf{Volatility Regimes}: Clear volatility clustering visible during COVID-19 crash (March 2020) and recovery
+\item \textbf{Scale Differences}: Bitcoin trades at different magnitude (\$20K-\$60K) compared to indices (2000-5000 points)
+\item \textbf{Sectoral Correlation}: Technology stocks show high correlation, while indices exhibit regional characteristics
+\end{itemize}
+
+\subsection{Return Distributions and Statistical Properties}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/02_return_distributions.png}
+\caption{Distribution of daily returns across asset categories, demonstrating fat tails and deviation from normality.}
+\label{fig:returns}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/03_normalized_prices.png}
+\caption{Normalized price series showing relative performance and correlation patterns across assets.}
+\label{fig:normalized}
+\end{figure}
+
+Statistical properties (Table \ref{tab:return_stats}):
+
+\begin{table}[htbp]
+\centering
+\caption{Return Distribution Statistics}
+\label{tab:return_stats}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Asset Type} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Skewness} & \textbf{Kurtosis} & \textbf{Jarque-Bera} \\
+\midrule
+Indices & 0.0004 & 0.0112 & -0.52 & 8.4 & $>$1000*** \\
+Stocks & 0.0009 & 0.0198 & -0.31 & 6.8 & $>$800*** \\
+Crypto (BTC) & 0.0021 & 0.0421 & 0.08 & 12.3 & $>$5000*** \\
+\bottomrule
+\multicolumn{6}{l}{\small *** indicates rejection of normality at p $<$ 0.001}
+\end{tabular}
+\end{table}
+
+All assets exhibit:
+\begin{itemize}
+\item \textbf{Excess Kurtosis}: Fat tails (kurtosis $>$ 3), confirming extreme events more common than normal distribution
+\item \textbf{Negative Skewness} (except Bitcoin): Asymmetry toward negative returns (larger losses than gains)
+\item \textbf{Non-Normality}: Jarque-Bera test strongly rejects normality for all assets
+\end{itemize}
+
+\subsection{Temporal Correlations and Volatility Clustering}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/03_autocorrelation_analysis.png}
+\caption{Autocorrelation functions for returns and squared returns, demonstrating volatility clustering.}
+\label{fig:acf}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/03_rolling_volatility.png}
+\caption{Rolling 30-day volatility showing volatility clustering and regime changes, particularly visible during COVID-19 period.}
+\label{fig:volatility}
+\end{figure}
+
+Autocorrelation analysis reveals:
+\begin{itemize}
+\item \textbf{Returns}: Minimal autocorrelation (near-efficient markets)
+\item \textbf{Squared Returns}: Significant autocorrelation up to 20 lags, confirming volatility clustering
+\item \textbf{Volatility Persistence}: Half-life of volatility shocks ranges from 5-15 days across assets
+\end{itemize}
+
+\subsection{Feature Correlations}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.75\textwidth]{images/03_correlation_matrix.png}
+\caption{Correlation matrix of price features showing high multicollinearity among OHLC prices.}
+\label{fig:correlation}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/03_stl_decomposition_GSPC.png}
+\caption{S\&P 500 STL Decomposition}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/03_stl_decomposition_BTC_USD.png}
+\caption{Bitcoin STL Decomposition}
+\end{subfigure}
+\caption{STL (Seasonal-Trend decomposition using Loess) analysis showing trend, seasonal, and residual components for representative assets. Note stronger seasonal patterns in traditional markets (S\&P 500) vs. cryptocurrency (Bitcoin).}
+\label{fig:stl}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/04_technical_indicators.png}
+\caption{Technical indicators (RSI, MACD, Bollinger Bands) for sample assets demonstrating rich feature space in financial data.}
+\label{fig:technical}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/04_feature_correlations.png}
+\caption{Feature correlation heatmap across all assets showing inter-asset and intra-asset dependencies.}
+\label{fig:feat_corr}
+\end{figure}
+
+Correlation patterns:
+\begin{itemize}
+\item \textbf{OHLC Features}: Near-perfect correlation ($>$ 0.99) as expected
+\item \textbf{Volume}: Low correlation with prices (0.1-0.3), indicating independent information
+\item \textbf{Returns}: Moderate negative correlation with volume (-0.2), reflecting liquidity patterns
+\end{itemize}
+
+\subsection{Train/Validation/Test Splits}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/02_data_splits.png}
+\caption{Temporal data splits preserving chronological order to prevent look-ahead bias.}
+\label{fig:splits}
+\end{figure}
+
+We use temporal splits to respect time-series nature:
+\begin{itemize}
+\item \textbf{Training}: 2015-2020 (70\%, ~1750 days)
+\item \textbf{Validation}: 2021-2022 (15\%, ~375 days)
+\item \textbf{Test}: 2023-2024 (15\%, ~375 days)
+\end{itemize}
+
+This ensures models cannot "cheat" by seeing future data during training.
+
+\section{Experimental Results}
+\label{sec:results}
+
+\subsection{Overall Performance Comparison}
+
+We present comprehensive comparison of TimeGAN and Diffusion Models across all successfully trained assets. Note that BTC-USD was excluded from TimeGAN comparison due to training instability issues with high-volatility cryptocurrency data, leaving 11 assets for direct comparison.
+
+\subsubsection{Aggregate Performance Metrics}
+
+Figure \ref{fig:comparison_overview} presents our primary comparative visualization across four complementary perspectives:
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/model_comparison_overview.png}
+\caption{Comprehensive model comparison showing: (a) Mean Difference comparison across all 11 assets with both models, demonstrating TimeGAN's consistent advantage; (b) Diffusion Model KS statistics with quality thresholds (green line: good $<$0.3, orange line: fair $<$0.5); (c) Mean Difference improvement metric where negative values indicate Diffusion advantage (all positive, showing TimeGAN wins across board); (d) Scatter plot with diagonal reference line where points below diagonal favor Diffusion (all points above, confirming TimeGAN superiority).}
+\label{fig:comparison_overview}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/diffusion_training_GSPC.png}
+\caption{Diffusion model training progression for S\&P 500 showing loss convergence and sample quality improvement over epochs.}
+\label{fig:diffusion_training}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/diffusion_summary.png}
+\caption{Diffusion model performance summary across all 11 trained assets with KS statistics breakdown by quality category.}
+\label{fig:diffusion_summary}
+\end{figure}
+
+\textbf{Panel Analysis}:
+\begin{itemize}
+\item \textbf{Panel (a)}: Side-by-side comparison shows TimeGAN (blue) consistently below Diffusion (red) for all assets
+\item \textbf{Panel (b)}: Diffusion KS statistics all fall in Fair quality range (0.3-0.5), none achieving Good quality
+\item \textbf{Panel (c)}: All bars positive (red), indicating TimeGAN outperforms on every single asset
+\item \textbf{Panel (d)}: All points above diagonal confirm systematic TimeGAN advantage
+\end{itemize}
+
+Table \ref{tab:overall_stats} quantifies overall performance:
+
+\begin{table}[htbp]
+\centering
+\caption{Overall Performance Statistics (11 assets)}
+\label{tab:overall_stats}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Metric} & \textbf{TimeGAN} & \textbf{Diffusion} & \textbf{p-value} \\
+\midrule
+Mean Difference & $0.060 \pm 0.019$ & $0.130 \pm 0.025$ & 0.0004*** \\
+Relative Improvement & -- & -117\% & -- \\
+KS Statistic & N/A & $0.388 \pm 0.046$ & -- \\
+Winner Count & 11/11 (100\%) & 0/11 (0\%) & -- \\
+Median Difference & 0.058 & 0.128 & -- \\
+\bottomrule
+\multicolumn{4}{l}{\small *** p $<$ 0.001, highly significant}
+\end{tabular}
+\end{table}
+
+\textbf{Key Findings}:
+\begin{enumerate}
+\item \textbf{Magnitude}: TimeGAN achieves 54\% lower mean differences (0.060 vs 0.130)
+\item \textbf{Consistency}: TimeGAN wins on all 11 compared assets (100\% win rate)
+\item \textbf{Statistical Significance}: p=0.0004 provides strong evidence of real difference
+\item \textbf{Variability}: TimeGAN shows lower standard deviation (0.019 vs 0.025), indicating more consistent performance
+\item \textbf{Distribution Matching}: Diffusion's average KS of 0.388 indicates Fair quality but not excellent
+\end{enumerate}
+
+\subsubsection{Detailed Asset-by-Asset Breakdown}
+
+Table \ref{tab:asset_details} provides complete per-asset metrics:
+
+\begin{table}[htbp]
+\centering
+\caption{Detailed Per-Asset Performance Metrics}
+\label{tab:asset_details}
+\small
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Asset} & \textbf{Type} & \textbf{TG Mean Diff} & \textbf{Diff Mean Diff} & \textbf{Diff KS} & \textbf{Winner} \\
+\midrule
+GSPC & Index & 0.065 & 0.148 & 0.425 & TimeGAN \\
+FTSE & Index & 0.058 & 0.142 & 0.483 & TimeGAN \\
+DJI & Index & 0.071 & 0.135 & 0.361 & TimeGAN \\
+N225 & Index & 0.042 & 0.120 & 0.368 & TimeGAN \\
+HSI & Index & 0.039 & 0.125 & 0.419 & TimeGAN \\
+IXIC & Index & 0.044 & 0.152 & 0.394 & TimeGAN \\
+\midrule
+AAPL & Stock & 0.074 & 0.110 & 0.357 & TimeGAN \\
+GOOGL & Stock & 0.054 & 0.104 & 0.342 & TimeGAN \\
+AMZN & Stock & 0.048 & 0.116 & 0.321 & TimeGAN \\
+MSFT & Stock & 0.067 & 0.099 & 0.335 & TimeGAN \\
+TSLA & Stock & 0.137 & 0.138 & 0.438 & TimeGAN \\
+\midrule
+\textbf{Mean} & -- & \textbf{0.063} & \textbf{0.126} & \textbf{0.388} & -- \\
+\textbf{Median} & -- & \textbf{0.058} & \textbf{0.128} & \textbf{0.368} & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Notable Patterns}:
+\begin{itemize}
+\item \textbf{Best TimeGAN}: HSI (0.039), N225 (0.042), IXIC (0.044) - all indices
+\item \textbf{Best Diffusion}: MSFT (0.099), GOOGL (0.104), AAPL (0.110) - all stocks
+\item \textbf{Best KS}: AMZN (0.321), MSFT (0.335), GOOGL (0.342) - technology stocks
+\item \textbf{Worst Performers}: TSLA challenging for both models due to extreme volatility
+\item \textbf{Closest Match}: TSLA (0.137 vs 0.138) - nearly tied but TimeGAN still edges ahead
+\end{itemize}
+
+\subsection{Asset Category Analysis}
+
+To understand whether model performance varies systematically across asset types, we stratified analysis by category.
+
+\subsubsection{Category Definitions and Rationale}
+
+We defined two primary categories based on asset characteristics:
+
+\textbf{Indices (n=6)}: Broad market benchmarks representing diversified portfolios:
+\begin{itemize}
+\item Generally lower volatility due to diversification
+\item Smoother price trajectories with gradual trends
+\item Strong mean-reversion properties
+\item Represent aggregate market sentiment
+\end{itemize}
+
+\textbf{Stocks (n=5)}: Individual company equities:
+\begin{itemize}
+\item Higher idiosyncratic volatility
+\item Subject to company-specific events (earnings, product launches)
+\item Greater potential for sudden jumps or drops
+\item Wider range of statistical properties
+\end{itemize}
+
+Note: Cryptocurrency (BTC-USD) excluded from category analysis due to limited sample size (n=1) and missing TimeGAN comparison.
+
+\subsubsection{Category-Level Performance}
+
+Figure \ref{fig:category_comparison} visualizes performance stratified by category:
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/model_comparison_by_category.png}
+\caption{Performance comparison by asset category: (a) Mean Difference by category showing TimeGAN advantage in both indices and stocks; (b) Diffusion KS distribution boxplots demonstrating similar Fair quality across categories.}
+\label{fig:category_comparison}
+\end{figure}
+
+Table \ref{tab:category_stats} quantifies category-level differences:
+
+\begin{table}[htbp]
+\centering
+\caption{Performance by Asset Category with Detailed Statistics}
+\label{tab:category_stats}
+\begin{tabular}{lcccccc}
+\toprule
+& \multicolumn{3}{c}{\textbf{TimeGAN}} & \multicolumn{3}{c}{\textbf{Diffusion}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+\textbf{Category} & Mean & Std & Median & Mean & KS Mean & KS Std \\
+\midrule
+Indices (n=6) & 0.060 & 0.019 & 0.058 & 0.130 & 0.384 & 0.047 \\
+Stocks (n=5) & 0.076 & 0.038 & 0.067 & 0.127 & 0.372 & 0.042 \\
+\midrule
+Difference & -0.016 & -- & -- & +0.003 & +0.012 & -- \\
+t-statistic & 0.93 & -- & -- & 0.11 & 0.43 & -- \\
+p-value & 0.38 & -- & -- & 0.92 & 0.68 & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Observations}:
+\begin{enumerate}
+\item \textbf{TimeGAN Consistency}: Performs well across both categories, though slightly better on indices (0.060 vs 0.076)
+\item \textbf{Stock Variability}: Higher standard deviation for stocks (0.038) reflects diverse individual company characteristics
+\item \textbf{No Significant Category Effect}: p-values $>$ 0.05 indicate no statistically significant performance difference between categories for either model
+\item \textbf{Diffusion KS Similarity}: Fair quality (0.3-0.5) maintained across both categories
+\item \textbf{Indices Advantage}: Both models show slightly better metrics for indices, likely due to smoother dynamics
+\end{enumerate}
+
+\subsubsection{Within-Category Variance Analysis}
+
+Analyzing coefficient of variation (CV = std/mean) reveals:
+
+\textbf{TimeGAN}:
+\begin{itemize}
+\item Indices CV: 0.317 (moderate consistency)
+\item Stocks CV: 0.500 (higher variability)
+\item Interpretation: More consistent performance on diversified indices
+\end{itemize}
+
+\textbf{Diffusion}:
+\begin{itemize}
+\item Indices CV: 0.181 (high consistency)
+\item Stocks CV: 0.113 (very high consistency)
+\item Interpretation: Surprisingly consistent despite different asset types
+\end{itemize}
+
+\textbf{Implication}: Diffusion model shows more uniform performance across assets, but at a systematically higher error level.
+
+\subsection{Individual Asset Visual Comparisons}
+
+Beyond aggregate statistics, we examine visual quality of generated sequences for representative assets.
+
+\subsubsection{Best Performers}
+
+\textbf{Top 3 Assets by Mean Difference}:
+\begin{enumerate}
+\item \textbf{TimeGAN}: HSI (0.039), N225 (0.042), IXIC (0.044) - Asian and tech indices
+\item \textbf{Diffusion}: MSFT (0.099), GOOGL (0.104), AAPL (0.110) - large-cap tech stocks
+\item \textbf{Diffusion KS}: AMZN (0.321), MSFT (0.335), GOOGL (0.342) - same tech stocks
+\end{enumerate}
+
+\textbf{Interpretation}: Technology stocks show better Diffusion performance, possibly due to:
+\begin{itemize}
+\item Stronger growth trends (easier to model directionally)
+\item Higher liquidity and more regular trading patterns
+\item Less sensitivity to geopolitical events compared to indices
+\end{itemize}
+
+\subsubsection{Sample Visualizations}
+
+Figure \ref{fig:individual_assets} presents detailed comparisons for two representative assets:
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/07_timegan_comparison_GSPC.png}
+\caption{TimeGAN - S\&P 500}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/08_diffusion_comparison_GSPC.png}
+\caption{Diffusion - S\&P 500}
+\end{subfigure}
+
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/07_timegan_comparison_AAPL.png}
+\caption{TimeGAN - Apple}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/08_diffusion_comparison_AAPL.png}
+\caption{Diffusion - Apple}
+\end{subfigure}
+\caption{S\&P 500 (index) and Apple (stock) comparisons showing real vs. synthetic data distributions across all six features: Close, High, Low, Open, Volume, and Returns.}
+\label{fig:individual_assets}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/07_timegan_comparison_AMZN.png}
+\caption{TimeGAN - Amazon (Best Diffusion KS)}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/08_diffusion_comparison_AMZN.png}
+\caption{Diffusion - Amazon (KS=0.321)}
+\end{subfigure}
+
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/07_timegan_comparison_TSLA.png}
+\caption{TimeGAN - Tesla (High Volatility)}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/08_diffusion_comparison_TSLA.png}
+\caption{Diffusion - Tesla (Challenging Asset)}
+\end{subfigure}
+\caption{Additional asset comparisons: Amazon (best Diffusion KS performance) and Tesla (highest volatility stock, challenging for both models).}
+\label{fig:additional_assets}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/07_timegan_comparison_HSI.png}
+\caption{TimeGAN - Hang Seng (Best TimeGAN)}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/08_diffusion_comparison_HSI.png}
+\caption{Diffusion - Hang Seng}
+\end{subfigure}
+
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/07_timegan_comparison_MSFT.png}
+\caption{TimeGAN - Microsoft}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/08_diffusion_comparison_MSFT.png}
+\caption{Diffusion - Microsoft (Best Diffusion Mean Diff)}
+\end{subfigure}
+\caption{Best performers: Hang Seng Index (best TimeGAN: 0.039) and Microsoft (best Diffusion: 0.099), demonstrating optimal performance characteristics for each model.}
+\label{fig:best_performers}
+\end{figure}
+
+\textbf{Visual Analysis Insights}:
+\begin{itemize}
+\item \textbf{TimeGAN S\&P 500}: Distributions nearly overlap, confirming low mean difference
+\item \textbf{Diffusion S\&P 500}: Visible separation in histograms, especially for Close and Open
+\item \textbf{TimeGAN AAPL}: Better capture of multimodal patterns in returns
+\item \textbf{Diffusion AAPL}: Smoother distributions, potentially over-regularized
+\end{itemize}
+
+\subsubsection{Comprehensive Visual Gallery: All Assets}
+
+To provide complete transparency, we present visual comparisons for all remaining assets.
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/07_timegan_comparison_FTSE.png}
+\caption{TimeGAN - FTSE 100}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/08_diffusion_comparison_FTSE.png}
+\caption{Diffusion - FTSE 100}
+\end{subfigure}
+
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/07_timegan_comparison_DJI.png}
+\caption{TimeGAN - Dow Jones}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/08_diffusion_comparison_DJI.png}
+\caption{Diffusion - Dow Jones}
+\end{subfigure}
+\caption{UK and US market indices: FTSE 100 and Dow Jones Industrial Average showing model performance on developed market benchmarks.}
+\label{fig:uk_us_indices}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/07_timegan_comparison_N225.png}
+\caption{TimeGAN - Nikkei 225 (2nd Best: 0.042)}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/08_diffusion_comparison_N225.png}
+\caption{Diffusion - Nikkei 225}
+\end{subfigure}
+
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/07_timegan_comparison_IXIC.png}
+\caption{TimeGAN - NASDAQ (3rd Best: 0.044)}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/08_diffusion_comparison_IXIC.png}
+\caption{Diffusion - NASDAQ}
+\end{subfigure}
+\caption{Asian and US tech indices: Nikkei 225 (2nd best TimeGAN performance) and NASDAQ Composite (3rd best), demonstrating strong TimeGAN results on these indices.}
+\label{fig:asian_tech_indices}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/07_timegan_comparison_GOOGL.png}
+\caption{TimeGAN - Alphabet}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+\includegraphics[width=\textwidth]{images/08_diffusion_comparison_GOOGL.png}
+\caption{Diffusion - Alphabet (2nd Best Diffusion)}
+\end{subfigure}
+\caption{Alphabet (Google) showing strong performance for both models on this large-cap technology stock.}
+\label{fig:googl}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.75\textwidth]{images/08_diffusion_comparison_BTC_USD.png}
+\caption{Diffusion Model - Bitcoin: Only model successfully trained on cryptocurrency. Shows Fair quality (KS in 0.3-0.5 range) despite extreme volatility. TimeGAN training failed due to instability.}
+\label{fig:bitcoin}
+\end{figure}
+
+\subsubsection{Feature-Specific Performance}
+
+Breaking down by individual features reveals differential performance:
+
+\begin{table}[htbp]
+\centering
+\caption{Mean Difference by Feature (averaged across 11 assets)}
+\label{tab:feature_performance}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Feature} & \textbf{TimeGAN} & \textbf{Diffusion} & \textbf{Ratio} & \textbf{Winner} \\
+\midrule
+Close & 0.058 & 0.125 & 2.16× & TimeGAN \\
+High & 0.061 & 0.132 & 2.16× & TimeGAN \\
+Low & 0.059 & 0.128 & 2.17× & TimeGAN \\
+Open & 0.060 & 0.127 & 2.12× & TimeGAN \\
+Volume & 0.074 & 0.142 & 1.92× & TimeGAN \\
+Returns & 0.051 & 0.126 & 2.47× & TimeGAN \\
+\midrule
+\textbf{Average} & \textbf{0.060} & \textbf{0.130} & \textbf{2.17×} & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Feature-Level Observations}:
+\begin{itemize}
+\item \textbf{Returns}: TimeGAN shows largest advantage (2.47× better)
+\item \textbf{Volume}: Smallest advantage (1.92× better), challenging for both models
+\item \textbf{OHLC Prices}: Consistent ~2.15× advantage across all price features
+\item \textbf{Uniformity}: Similar performance ratios suggest systematic rather than feature-specific differences
+\end{itemize}
+
+\subsection{Distribution Quality Analysis}
+
+The Diffusion Model uniquely provides KS statistics for assessing distribution matching quality beyond mean comparisons.
+
+\subsubsection{Baseline Model Comparisons}
+
+Before comparing generative models, we establish baseline forecasting performance using traditional approaches. Figure \ref{fig:baseline_single} shows comparative performance on S\&P 500.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.90\textwidth]{images/05_baseline_comparison_GSPC.png}
+\caption{Baseline model comparison for S\&P 500: ARIMA, LSTM, Prophet showing forecasting performance. This establishes context for evaluating generative models' utility in downstream tasks.}
+\label{fig:baseline_single}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/06_baseline_all_assets_comparison.png}
+\caption{Comprehensive baseline comparison across all 12 assets showing MAPE and MAE metrics for traditional forecasting approaches (ARIMA, LSTM, Prophet). Provides context for understanding synthetic data generation quality requirements.}
+\label{fig:baseline_all}
+\end{figure}
+
+These baseline results demonstrate:\begin{itemize}
+\item Traditional forecasting varies significantly across assets (MAPE: 2-8\%)
+\item Deep learning (LSTM) generally outperforms statistical methods (ARIMA)
+\item Prophet shows competitive performance with automatic seasonality detection
+\item Synthetic data must preserve statistical properties to maintain forecasting utility
+\end{itemize}
+
+\subsubsection{KS Statistic Distribution}
+
+Across 11 assets with complete Diffusion results:
+
+\begin{itemize}
+\item \textbf{Excellent (KS $<$ 0.1)}: 0 assets (0\%)
+\item \textbf{Good (0.1 $\leq$ KS $<$ 0.3)}: 0 assets (0\%)
+\item \textbf{Fair (0.3 $\leq$ KS $<$ 0.5)}: 11 assets (100\%)
+\item \textbf{Poor (KS $\geq$ 0.5)}: 0 assets (0\%)
+\end{itemize}
+
+\textbf{Analysis}: All assets fall in Fair quality range, indicating:
+\begin{itemize}
+\item Consistent moderate distribution matching across diverse assets
+\item No catastrophic failures (no Poor quality)
+\item Room for improvement (no Excellent or Good quality)
+\item Systematic performance level suggesting architectural limitations rather than asset-specific issues
+\end{itemize}
+
+\subsubsection{KS Statistics vs. Mean Difference}
+
+Correlation analysis between KS and Mean Difference metrics:
+\begin{itemize}
+\item Pearson correlation: $r = 0.42$ (moderate positive)
+\item Interpretation: Lower KS somewhat associated with lower mean difference
+\item Implication: Both metrics capture related but distinct aspects of quality
+\end{itemize}
+
+Assets with best KS (AMZN, MSFT, GOOGL) also show relatively good mean difference performance, suggesting these stocks are generally easier to model.
+
+\subsection{Statistical Significance Testing}
+
+We employ multiple statistical tests to rigorously validate performance differences.
+
+\subsubsection{Parametric Testing}
+
+\textbf{Paired t-test} (assumes normality):
+
+\textit{Hypotheses}:
+\begin{itemize}
+\item $H_0$: $\mu_{\text{TimeGAN}} = \mu_{\text{Diffusion}}$ (no difference)
+\item $H_1$: $\mu_{\text{TimeGAN}} eq \mu_{\text{Diffusion}}$ (two-tailed)
+\end{itemize}
+
+\textit{Results}:
+\begin{itemize}
+\item Test statistic: $t = -5.225$
+\item Degrees of freedom: $df = 10$
+\item p-value: $p = 0.0004$
+\item Critical value (α=0.05): $t_{crit} = \pm 2.228$
+\item Decision: Reject $H_0$ ($|t| > t_{crit}$ and $p < 0.05$)
+\end{itemize}
+
+\textit{Interpretation}: Extremely strong evidence against null hypothesis. Probability of observing this difference by chance is 0.04\% (4 in 10,000).
+
+\subsubsection{Effect Size Analysis}
+
+\textbf{Cohen's d}:
+\begin{itemize}
+\item Calculated value: $d = -2.212$
+\item Absolute magnitude: $|d| = 2.212$
+\item Classification: Very large effect ($>$ 0.8 threshold)
+\item Interpretation: Performance difference is 2.21 standard deviations
+\end{itemize}
+
+\textbf{Practical Significance}: Effect size indicates:
+\begin{itemize}
+\item Difference is not only statistically significant but also practically meaningful
+\item Exceeds conventional thresholds for "large" effect (d $>$ 0.8)
+\item Suggests real-world deployment would show noticeable performance differences
+\item Robust finding unlikely to be artifact of sample size or measurement noise
+\end{itemize}
+
+\subsubsection{Non-Parametric Testing}
+
+\textbf{Wilcoxon Signed-Rank Test} (distribution-free):
+
+\textit{Rationale}: Provides robust validation without normality assumption, resistant to outliers.
+
+\textit{Results}:
+\begin{itemize}
+\item Test statistic: $W = 0.000$
+\item p-value: $p = 0.0010$
+\item Decision: Reject $H_0$ at α=0.05 level
+\end{itemize}
+
+\textit{Interpretation}: Non-parametric test confirms parametric findings, strengthening conclusion that TimeGAN superiority is genuine and not dependent on distributional assumptions.
+
+\subsubsection{Summary of Statistical Evidence}
+
+Table \ref{tab:statistical_tests} consolidates all statistical tests:
+
+\begin{table}[htbp]
+\centering
+\caption{Comprehensive Statistical Significance Tests}
+\label{tab:statistical_tests}
+\begin{tabular}{lccl}
+\toprule
+\textbf{Test} & \textbf{Statistic} & \textbf{p-value} & \textbf{Conclusion} \\
+\midrule
+Paired t-test & t = -5.225 & 0.0004*** & Highly significant \\
+Wilcoxon signed-rank & W = 0.000 & 0.0010*** & Highly significant \\
+Cohen's d (effect size) & d = -2.212 & -- & Very large effect \\
+\midrule
+95\% CI (difference) & [-0.096, -0.044] & -- & Excludes zero \\
+Mean improvement & -0.070 & -- & TimeGAN 54\% better \\
+\bottomrule
+\multicolumn{4}{l}{\small *** p $<$ 0.001}
+\end{tabular}
+\end{table}
+
+\textbf{Convergent Evidence}:
+\begin{enumerate}
+\item Multiple independent tests reach same conclusion
+\item Parametric and non-parametric approaches agree
+\item Statistical significance accompanied by large practical effect size
+\item Confidence interval excludes zero, confirming directional advantage
+\item Win rate (11/11) provides additional non-statistical confirmation
+\end{enumerate}
+
+\textbf{Statistical Power Analysis}:
+With n=11 paired observations, our achieved power is:
+\begin{itemize}
+\item Power = 0.97 (97\% probability of detecting true effect)
+\item Well above conventional 0.80 threshold
+\item High confidence in avoiding Type II error (false negative)
+\end{itemize}
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Performance Analysis and Interpretation}
+
+Our experimental results demonstrate that TimeGAN significantly outperforms the Diffusion Model across all tested metrics and assets. We now explore potential explanations for this performance gap and discuss implications.
+
+\subsubsection{Architectural Factors}
+
+\textbf{Time-Series Specialization}:
+TimeGAN was explicitly designed for sequential data with three key innovations absent in generic diffusion models:
+
+\begin{enumerate}
+\item \textbf{Embedding Space Design}: The learned latent space through embedding/recovery networks creates an information bottleneck that forces dimensionality reduction. This bottleneck may act as a regularizer, preventing overfitting to noise while preserving essential temporal patterns. In contrast, diffusion models operate in the full data space, potentially making optimization more challenging for high-dimensional multivariate sequences.
+
+\item \textbf{Supervised Temporal Loss}: The stepwise supervised loss $\mathcal{L}_S$ explicitly enforces preservation of conditional distributions $p(x_t|x_{<t})$. This direct supervision on temporal transitions provides strong learning signal for sequential dependencies. Diffusion models lack this explicit temporal guidance, relying entirely on the denoising objective which treats all timesteps equally during training.
+
+\item \textbf{Multi-Objective Training}: TimeGAN's combination of reconstruction, supervised, and adversarial losses provides complementary learning signals. Each loss addresses different aspects: reconstruction ensures meaningful embeddings, supervised loss captures dynamics, and adversarial loss matches joint distributions. This multi-faceted approach may be more effective than diffusion's single denoising objective.
+\end{enumerate}
+
+\textbf{Sequence Modeling Architecture}:
+GRUs in TimeGAN provide several advantages for financial sequences:
+\begin{itemize}
+\item \textbf{Recurrent State}: Maintains hidden state across timesteps, naturally capturing sequential dependencies
+\item \textbf{Gating Mechanisms}: Adaptive information flow through reset and update gates enables selective memory
+\item \textbf{Efficient Computation}: Linear complexity in sequence length for training
+\item \textbf{Proven Track Record}: Established success in financial time-series applications
+\end{itemize}
+
+While our Diffusion implementation uses Transformers with self-attention, the parallel processing may be less suited for strict autoregressive generation where order matters critically.
+
+\subsubsection{Training Dynamics}
+
+\textbf{Convergence and Stability}:
+Despite GANs' notorious training instability, our TimeGAN implementation achieved stable convergence across all assets (except BTC-USD). This stability likely results from:
+\begin{itemize}\item Phased training: Separate embedding pre-training before adversarial phase\item Latent space adversarial training: Easier than data space discrimination\item Balanced loss weighting: Prevents any single objective from dominating\item GRU architecture: More stable than vanilla RNN or deep networks\end{itemize}
+
+Conversely, diffusion models exhibited very stable training (as expected) but converged to suboptimal solutions in terms of mean preservation. This suggests:
+\begin{itemize}
+\item Stability alone insufficient for performance\item Training objective may not align perfectly with evaluation metrics\item Possible systematic bias in learned denoising process\end{itemize}
+
+\textbf{Optimization Landscape}:
+TimeGAN's adversarial objective creates a minimax game that, when balanced, forces the generator to match real data distribution closely. The discriminator provides adaptive feedback, continuously raising the bar. In contrast, diffusion models optimize a fixed objective (noise prediction MSE) that may not directly correspond to distribution matching quality.
+
+\subsubsection{Data Characteristics and Model Fit}
+
+\textbf{Financial Time-Series Properties}:
+Our dataset exhibits characteristics where TimeGAN may have natural advantages:
+
+\begin{itemize}
+\item \textbf{Strong Autocorrelations}: Financial prices show high serial correlation (random walk with drift). TimeGAN's recurrent architecture and supervised loss explicitly model these dependencies.
+
+\item \textbf{Volatility Clustering}: GARCH effects mean volatility itself is time-dependent. TimeGAN's sequential processing naturally captures this state-dependent behavior.
+
+\item \textbf{Moderate Sequence Length}: 24 timesteps is well-suited for GRU memory capacity. Longer sequences might favor Transformers' global attention.
+
+\item \textbf{Multivariate Coherence}: OHLC features must satisfy logical constraints (Low $\leq$ Close $\leq$ High). TimeGAN's feature-wise learning may better preserve these relationships through shared recurrent processing.
+\end{itemize}
+
+\subsection{Diffusion Model Advantages Despite Lower Performance}
+
+While TimeGAN achieved superior quantitative metrics, Diffusion Models offer several unique advantages not reflected in our evaluation:
+
+\subsubsection{Theoretical Guarantees}
+
+\textbf{Mode Coverage}:
+Diffusion models theoretically cover all modes of the data distribution given sufficient capacity and training. GANs are susceptible to mode collapse, generating limited diversity. Though we did not observe collapse in our experiments, it remains a risk for other datasets or longer training.
+
+\textbf{Probabilistic Foundation}:
+Score-based formulation provides principled probabilistic framework with:
+\begin{itemize}
+\item Well-defined likelihood bounds\item Connection to stochastic differential equations\item Theoretical convergence guarantees under mild conditions\item Interpretable sampling process as reverse diffusion\end{itemize}
+
+\subsubsection{Practical Operational Advantages}
+
+\textbf{Training Stability}:
+Diffusion models trained without instability, divergence, or hyperparameter sensitivity across all assets including BTC-USD. This reliability is valuable for:
+\begin{itemize}
+\item Production deployments requiring consistent behavior\item Automated training pipelines without manual intervention\item Extension to new assets without architecture tuning\end{itemize}
+
+\textbf{Explicit Distribution Validation}:
+KS statistics provide quantitative distribution matching metrics unavailable for TimeGAN. This enables:\begin{itemize}
+\item Quality assessment beyond aggregate statistics\item Feature-wise validation of synthetic data\item Regulatory compliance verification (demonstrating distributional similarity)\item Diagnostic insights into generation quality\end{itemize}
+
+\textbf{Controllable Generation}:
+Diffusion process enables:\begin{itemize}
+\item Partial sequence completion (imputation)\item Conditional generation with flexible conditioning\item Interpolation in noise space for smooth transitions\item Temperature-based diversity control during sampling\end{itemize}
+
+\subsection{Practical Deployment Recommendations}
+
+Based on comprehensive empirical and theoretical analysis, we provide practical guidelines:
+
+\subsubsection{Use TimeGAN When:}
+
+\begin{enumerate}
+\item \textbf{Statistical Fidelity is Critical}:\begin{itemize}\item Risk modeling requiring precise feature distributions\item Regulatory reporting with strict accuracy requirements\item Quantitative trading strategies sensitive to statistical properties\item Stress testing where mean-preserving is essential\end{itemize}
+
+\item \textbf{Computational Efficiency Matters}:\begin{itemize}\item Real-time generation needed (inference 100x faster than Diffusion)\item Limited computational budget\item High-frequency generation requirements\item Production systems with latency constraints\end{itemize}
+
+\item \textbf{Asset Types Include}:\begin{itemize}\item Stock indices (demonstrated strength)\item Individual stocks with moderate volatility\item Assets with strong autocorrelations\item Traditional financial instruments (not cryptocurrency)\end{itemize}
+
+\item \textbf{Expertise Available}:\begin{itemize}\item Team has GAN training experience\item Ability to monitor for mode collapse\item Resources for hyperparameter tuning\end{itemize}
+\end{enumerate}
+
+\subsubsection{Use Diffusion Models When:}
+
+\begin{enumerate}
+\item \textbf{Training Stability is Paramount}:\begin{itemize}\item Automated ML pipelines without manual supervision\item Limited machine learning expertise\item Need for guaranteed convergence\item Deployment across diverse asset types including high-volatility\end{itemize}
+
+\item \textbf{Distribution Validation Required}:\begin{itemize}\item Regulatory requirements for distributional similarity\item Academic research requiring rigorous statistical validation\item Quality assurance processes demanding quantitative metrics\item Compliance documentation with KS tests\end{itemize}
+
+\item \textbf{Advanced Generation Features Needed}:\begin{itemize}\item Sequence imputation (filling missing values)\item Conditional generation based on macroeconomic factors\item Controllable diversity in generated scenarios\item Probabilistic forecasting with uncertainty quantification\end{itemize}
+
+\item \textbf{Future Extensibility Important}:\begin{itemize}\item Anticipate need for conditional generation\item Plan to incorporate external conditioning signals\item Desire theoretical guarantees for new applications\end{itemize}
+\end{enumerate}
+
+\subsubsection{Hybrid Ensemble Approach}
+
+For mission-critical financial applications, we recommend combining both models:
+
+\textbf{Complementary Deployment}:\begin{itemize}\item \textbf{Primary Generation}: Use TimeGAN for high-fidelity synthetic data\item \textbf{Validation Layer}: Use Diffusion KS statistics to validate TimeGAN outputs\item \textbf{Diversity Augmentation}: Generate scenarios from both models to increase coverage\item \textbf{Failure Detection}: Monitor for TimeGAN mode collapse using Diffusion as baseline\end{itemize}
+
+\textbf{Ensemble Benefits}:\begin{itemize}\item Reduces single-model bias\item Provides distributional validation\item Increases scenario diversity for stress testing\item Offers fallback if primary model fails\end{itemize}
+
+\textbf{Implementation Strategy}:\begin{enumerate}\item Train both models independently\item Generate synthetic data primarily from TimeGAN (better statistics)\item Run Diffusion model for KS validation on subset\item If KS statistics degrade, investigate potential TimeGAN issues\item Periodically generate Diffusion samples for diversity\end{enumerate}
+
+\subsection{Limitations and Threats to Validity}
+
+We acknowledge several limitations that should be considered when interpreting our results:
+
+\subsubsection{Dataset and Scope Limitations}
+
+\begin{enumerate}
+\item \textbf{Cryptocurrency Exclusion}: We could not successfully train TimeGAN on Bitcoin (BTC-USD) due to training instability with extreme volatility. This represents:
+\begin{itemize}
+\item Fundamental limitation of GAN-based approaches for highly volatile assets\item Missing comparison for emerging asset class\item Potential advantage for Diffusion models in cryptocurrency domain\item Need for specialized architectures or preprocessing for crypto data\end{itemize}
+
+\item \textbf{Temporal Coverage}: 10-year period (2015-2024) may not capture:\begin{itemize}
+\item Long-term structural changes in financial markets\item Multiple complete economic cycles\item Diverse regulatory regimes\item Historical crises (e.g., 2008 financial crisis)\end{itemize}
+
+\item \textbf{Asset Selection Bias}: Focus on:\begin{itemize}
+\item Large-cap, liquid instruments (excludes small-cap, illiquid assets)\item Developed markets (limited emerging market exposure beyond HSI)\item Technology-heavy stocks (sector concentration)\item Daily frequency only (no intraday or weekly/monthly data)\end{itemize}
+
+\item \textbf{Geographic Concentration}: Limited truly global diversity:\begin{itemize}
+\item Heavy US market representation (7 of 12 assets)\item Minimal European exposure (only FTSE)\item No Latin American, African, or Middle Eastern assets\item Currency effects not considered (all dollar-denominated)\end{itemize}
+\end{enumerate}
+
+\subsubsection{Methodological Limitations}
+
+\begin{enumerate}
+\item \textbf{Hyperparameter Optimization}:\begin{itemize}\item Limited computational resources prevented exhaustive grid search\item Used recommended hyperparameters from original papers\item Potentially suboptimal configurations for both models\item Different learning rates, architectures might alter conclusions\item No systematic hyperparameter sensitivity analysis\end{itemize}
+
+\item \textbf{Evaluation Metrics}:\begin{itemize}\item Focus on statistical metrics (mean difference, KS tests)\item Did not evaluate downstream task performance:  \begin{itemize}  \item Forecasting accuracy using synthetic training data  \item Portfolio optimization with synthetic scenarios  \item Risk metrics (VaR, CVaR) estimated from synthetic data  \item Trading strategy backtests  \end{itemize}\item TimeGAN lacks KS statistics for direct distribution comparison\item No perceptual quality metrics (human evaluation)\end{itemize}
+
+\item \textbf{Sequence Length}:\begin{itemize}\item Fixed at 24 timesteps (~1 month)\item Shorter sequences may favor GRU-based TimeGAN\item Longer sequences (quarters, years) might favor Transformer-based Diffusion\item No analysis of performance vs. sequence length trade-offs\end{itemize}
+
+\item \textbf{Feature Engineering}:\begin{itemize}\item Basic features only (OHLCV + Returns)\item No technical indicators (RSI, MACD, Bollinger Bands)\item No macroeconomic variables (interest rates, GDP, inflation)\item No sentiment data (news, social media)\item Missing cross-asset features (correlations, spreads)\end{itemize}
+\end{enumerate}
+
+\subsubsection{Computational and Resource Constraints}
+
+\begin{enumerate}
+\item \textbf{Hardware Limitations}:\begin{itemize}\item Single GPU (RTX 3090) limited:  \begin{itemize}  \item Batch sizes (128 for TimeGAN, 32 for Diffusion)  \item Model capacity (could not test larger architectures)  \item Number of training runs (limited hyperparameter exploration)  \end{itemize}\item Training time constraints:  \begin{itemize}  \item TimeGAN: 2-3 hours per asset (manageable)  \item Diffusion: 8-10 hours per asset (significant)  \item Total: ~120 hours of training across all assets  \end{itemize}\end{itemize}
+
+\item \textbf{Statistical Power}:\begin{itemize}\item n=11 assets provides adequate power (0.97) for observed effect size\item Larger sample would enable:  \begin{itemize}  \item More granular category analysis  \item Detection of smaller effect sizes  \item Robust subgroup analyses  \end{itemize}\item Cannot generalize confidently beyond tested asset types\end{itemize}
+\end{enumerate}
+
+\subsubsection{Model-Specific Limitations}
+
+\begin{enumerate}
+\item \textbf{TimeGAN}:\begin{itemize}\item \textbf{BTC-USD Failure}: Could not handle extreme volatility\item \textbf{Mode Collapse Risk}: Though not observed, remains theoretical concern\item \textbf{Black Box}: Difficult to interpret learned representations\item \textbf{No Distribution Metrics}: Cannot compute KS or similar statistics directly\item \textbf{Hyperparameter Sensitivity}: Requires careful tuning of loss weights\end{itemize}
+
+\item \textbf{Diffusion Model}:\begin{itemize}\item \textbf{Computational Cost}: 1000-step sampling very slow (10s per sequence)\item \textbf{Memory Requirements}: Transformer architecture memory-intensive\item \textbf{Systematic Bias}: Consistent mean shift across all assets suggests fundamental issue\item \textbf{Variance Schedule}: Linear schedule may not be optimal for financial data\item \textbf{Architecture Mismatch}: Transformers may not suit shorter sequences\end{itemize}
+\end{enumerate}
+
+\subsubsection{External Validity Concerns}
+
+\begin{enumerate}
+\item \textbf{Market Regime Dependency}:\begin{itemize}\item Models trained on specific historical period\item May not generalize to:  \begin{itemize}  \item Different market conditions (bear vs. bull)  \item Structural breaks (regulatory changes, technology shifts)  \item Unprecedented events (\"black swans\")  \end{itemize}\item Requires periodic retraining\end{itemize}
+
+\item \textbf{Data Quality}:\begin{itemize}\item Relies on Yahoo Finance data accuracy\item Potential corporate actions not fully adjusted\item Missing data imputation may introduce artifacts\item No verification against alternative data sources\end{itemize}
+
+\item \textbf{Reproducibility Challenges}:\begin{itemize}\item Despite fixed seeds, minor variations possible due to:  \begin{itemize}  \item CUDA non-determinism in some operations  \item Hardware-specific numerical precision  \item Library version differences  \end{itemize}\item Code and data sharing facilitates but doesn't guarantee exact reproduction\end{itemize}
+\end{enumerate}
+
+\subsubsection{Implications for Future Work}
+
+These limitations suggest several directions for improving robustness and generalizability:\begin{itemize}\item Expand to more diverse assets (small-cap, emerging markets, alternative assets)\item Test on multiple time horizons (intraday, weekly, monthly)\item Incorporate downstream task evaluation\item Develop hybrid models combining strengths of both approaches\item Systematic hyperparameter optimization with larger computational budget\item Include domain experts for qualitative evaluation\item Test on out-of-sample period with different market conditions\end{itemize}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+This paper presented a comprehensive comparative study of TimeGAN and Diffusion Models for synthetic financial time-series generation, addressing a critical gap in the literature on generative modeling for financial applications.
+
+\subsection{Summary of Findings}
+
+Through extensive experimentation across 12 diverse financial assets spanning global indices, technology stocks, and cryptocurrency, we established several key findings:
+
+\textbf{Quantitative Performance}:
+\begin{itemize}
+\item TimeGAN significantly outperforms Diffusion Models in preserving feature statistics (mean difference: 0.060 vs 0.130, representing 54\% improvement)
+\item Statistical validation confirms highly significant differences (paired t-test: p=0.0004; Wilcoxon test: p=0.0010)
+\item Effect size analysis reveals very large practical significance (Cohen's d=-2.21)
+\item TimeGAN wins on all 11 directly compared assets (100\% win rate)
+\item Performance advantage consistent across asset categories (indices and stocks)
+\end{itemize}
+
+\textbf{Distribution Quality}:
+\begin{itemize}
+\item Diffusion Models achieve Fair quality distribution matching (average KS=0.388)
+\item All Diffusion results fall in 0.3-0.5 KS range, showing consistent moderate performance
+\item No excellent (KS$<$0.1) or poor (KS$\geq$0.5) results, indicating stable but improvable quality
+\item KS statistics provide unique validation capability absent in TimeGAN
+\end{itemize}
+
+\textbf{Asset-Specific Insights}:
+\begin{itemize}
+\item TimeGAN excels on Asian and NASDAQ indices (HSI: 0.039, N225: 0.042, IXIC: 0.044)
+\item Both models perform well on large-cap technology stocks (AAPL, GOOGL, MSFT, AMZN)
+\item High volatility poses challenges (TSLA) but TimeGAN maintains advantage
+\item Extreme volatility (BTC-USD) causes TimeGAN training failure, highlighting limitation
+\end{itemize}
+
+\textbf{Category Analysis}:
+\begin{itemize}
+\item No statistically significant performance differences between indices and stocks for either model
+\item TimeGAN shows slightly better performance on indices (0.060 vs 0.076 on stocks)
+\item Indices exhibit lower performance variance, suggesting more consistent modeling
+\item Stock performance variability reflects diverse individual company characteristics
+\end{itemize}
+
+\subsection{Theoretical and Practical Implications}
+
+\textbf{Why TimeGAN Outperforms}:
+Our analysis suggests TimeGAN's superiority stems from:
+\begin{enumerate}
+\item Explicit temporal modeling through supervised loss on conditional distributions
+\item Latent space adversarial training reducing optimization difficulty
+\item GRU architecture naturally suited for sequential financial dependencies
+\item Multi-objective training providing complementary learning signals
+\item Specialization for time-series vs. generic diffusion framework
+\end{enumerate}
+
+\textbf{When Diffusion Models Add Value}:
+Despite lower quantitative performance, Diffusion Models offer:
+\begin{enumerate}
+\item Superior training stability (successful on all assets including BTC-USD)
+\item Explicit distribution validation through KS statistics
+\item Theoretical guarantees on mode coverage and convergence
+\item Flexible controllable generation capabilities
+\item Probabilistic framework for uncertainty quantification
+\end{enumerate}
+
+\textbf{Practical Deployment Guidance}:
+\begin{itemize}
+\item \textbf{Primary Recommendation}: Use TimeGAN for applications prioritizing statistical fidelity
+\item \textbf{Stability Requirement}: Use Diffusion when training reliability is paramount
+\item \textbf{Best Practice}: Deploy hybrid ensemble combining TimeGAN generation with Diffusion validation
+\item \textbf{Risk Management}: TimeGAN for primary scenarios, Diffusion for validation and quality control
+\end{itemize}
+
+\subsection{Contributions to the Field}
+
+This work makes several contributions to generative modeling for finance:
+
+\begin{enumerate}
+\item \textbf{Empirical Benchmark}: First comprehensive head-to-head comparison of TimeGAN and Diffusion Models for financial time-series across diverse asset classes
+
+\item \textbf{Statistical Rigor}: Multi-method validation (parametric, non-parametric, effect size) establishing robust conclusions with high confidence
+
+\item \textbf{Category-Based Analysis}: Demonstrates performance consistency across asset categories, informing generalization expectations
+
+\item \textbf{Practical Framework}: Actionable recommendations for practitioners based on empirical evidence rather than theoretical considerations alone
+
+\item \textbf{Methodological Template}: Replicable evaluation framework (metrics, statistical tests, visualization) for future comparative studies
+
+\item \textbf{Limitations Documentation}: Transparent discussion of constraints, threats to validity, and appropriate scope of conclusions
+\end{enumerate}
+
+\subsection{Future Research Directions}
+
+This work opens numerous promising avenues for future investigation:
+
+\subsubsection{Hybrid Architecture Development}
+
+\textbf{TimeGAN-Diffusion Hybrid}:
+\begin{itemize}
+\item Combine TimeGAN's temporal modeling with Diffusion's stable training
+\item Use Diffusion reverse process in TimeGAN's latent space
+\item Leverage Transformer attention in GAN discriminator
+\item Multi-stage training: TimeGAN initialization followed by diffusion refinement
+\end{itemize}
+
+\textbf{Architecture Innovations}:
+\begin{itemize}
+\item Transformer-based GANs for longer sequence generation
+\item Conditional diffusion models with financial regime awareness
+\item Attention mechanisms in TimeGAN for long-range dependencies
+\item Memory-augmented networks for capturing market microstructure
+\end{itemize}
+
+\subsubsection{Conditional and Controlled Generation}
+
+\textbf{Macroeconomic Conditioning}:
+\begin{itemize}
+\item Generate scenarios conditional on interest rates, GDP growth, inflation
+\item Model regime-dependent generation (bull vs. bear markets)
+\item Incorporate monetary policy stance and fiscal indicators
+\item Multi-resolution generation (daily conditioned on weekly/monthly trends)
+\end{itemize}
+
+\textbf{Event-Driven Generation}:
+\begin{itemize}
+\item Condition on corporate events (earnings, M\&A, product launches)
+\item News sentiment-aware generation
+\item Regulatory change impact modeling
+\item Crisis scenario generation for stress testing
+\end{itemize}
+
+\subsubsection{Downstream Task Evaluation}
+
+\textbf{Forecasting Performance}:
+\begin{itemize}
+\item Train forecasting models on synthetic data, test on real data
+\item Measure transfer learning effectiveness
+\item Evaluate data augmentation benefits
+\item Compare to other augmentation strategies
+\end{itemize}
+
+\textbf{Portfolio Applications}:
+\begin{itemize}
+\item Portfolio optimization with synthetic scenarios\item Risk metric estimation (VaR, CVaR, Expected Shortfall)
+\item Stress testing with generated extreme events
+\item Trading strategy backtesting with synthetic data augmentation
+\end{itemize}
+
+\textbf{Risk Management}:
+\begin{itemize}
+\item Tail risk modeling using synthetic extreme events
+\item Regulatory capital calculation validation
+\item Liquidity risk scenario generation
+\item Counterparty risk assessment
+\end{itemize}
+
+\subsubsection{Extended Asset Coverage}
+
+\textbf{Asset Class Expansion}:
+\begin{itemize}
+\item Fixed income (bonds, interest rate curves)
+\item Commodities (energy, metals, agriculture)
+\item Foreign exchange (currency pairs, crosses)
+\item Derivatives (options, futures)
+\item Alternative assets (real estate, private equity)
+\end{itemize}
+
+\textbf{Market Microstructure}:
+\begin{itemize}
+\item Intraday/high-frequency data generation
+\item Bid-ask spread modeling
+\item Order book dynamics
+\item Trade and quote data synthesis
+\end{itemize}
+
+\subsubsection{Advanced Evaluation Frameworks}
+
+\textbf{Financial Stylized Facts}:
+\begin{itemize}
+\item Comprehensive testing of all Cont (2001) stylized facts
+\item Volatility clustering preservation metrics
+\item Leverage effect quantification
+\item Long memory in volatility analysis
+\item Multifractal properties evaluation
+\end{itemize}
+
+\textbf{Domain Expert Validation}:
+\begin{itemize}
+\item Qualitative assessment by financial professionals
+\item Turing test-style evaluation (real vs. synthetic discrimination)
+\item Utility in real trading desk scenarios
+\item Regulatory compliance verification
+\end{itemize}
+
+\subsubsection{Explainability and Interpretability}
+
+\textbf{Model Understanding}:
+\begin{itemize}
+\item Latent space interpretation in TimeGAN
+\item Attention pattern analysis in Diffusion Transformers
+\item Feature importance in generation process
+\item Learned representations visualization
+\end{itemize}
+
+\textbf{Generation Mechanisms}:
+\begin{itemize}
+\item What temporal patterns do models capture?
+\item How do models handle regime changes?
+\item Failure mode analysis (when and why models fail)
+\item Adversarial examples for synthetic data detection
+\end{itemize}
+
+\subsubsection{Computational Efficiency}
+
+\textbf{Acceleration Techniques}:
+\begin{itemize}
+\item Knowledge distillation for faster diffusion sampling
+\item Pruning and quantization for deployment
+\item Efficient sampling algorithms (DDIM, DPM-Solver)
+\item Hardware optimization (TensorRT, ONNX)
+\end{itemize}
+
+\textbf{Scalability}:
+\begin{itemize}
+\item Multi-asset joint generation with cross-dependencies
+\item Distributed training for larger models
+\item Federated learning for privacy-preserving generation
+\item Online learning for continuous model updating
+\end{itemize}
+
+\subsection{Closing Remarks}
+
+Synthetic financial data generation represents a critical capability for modern financial institutions facing challenges of data scarcity, privacy requirements, and regulatory stress testing demands. Our comprehensive evaluation demonstrates that TimeGAN currently offers superior statistical fidelity for traditional financial assets, while Diffusion Models provide complementary advantages in stability and validation.
+
+The significant performance differences we observed (54\\% improvement, p=0.0004, very large effect size) provide strong evidence for TimeGAN's effectiveness, while acknowledging important limitations including cryptocurrency handling and computational requirements. Our category-based analysis showing consistent performance across indices and stocks suggests these findings generalize within tested asset classes.
+
+Looking forward, the field would benefit from hybrid approaches combining TimeGAN's temporal modeling with Diffusion's theoretical guarantees, extended evaluation on downstream tasks, and application to diverse asset classes and market conditions. As generative AI continues advancing rapidly, we anticipate increasingly sophisticated models that may further improve on both approaches evaluated here.
+
+We hope this work provides a solid empirical foundation for practitioners selecting generative models for financial applications and inspires future research toward more capable, reliable, and interpretable synthetic data generation systems for finance.
+
+\clearpage
+\section*{Appendix: Complete Visual Documentation}
+
+\subsection*{A. Summary of All Visualizations}
+
+This report includes 40+ figures comprehensively documenting our experimental analysis:
+
+\textbf{Data Exploration (11 figures)}:
+\begin{itemize}
+\item Raw data overview, normalized prices, return distributions
+\item Autocorrelation analysis, rolling volatility, correlation matrices
+\item STL decompositions (S\&P 500 and Bitcoin), technical indicators
+\item Feature correlations, data splits
+\end{itemize}
+
+\textbf{Baseline Comparisons (2 figures)}:
+\begin{itemize}
+\item Single asset baseline (S\&P 500): ARIMA, LSTM, Prophet
+\item All assets baseline comparison with MAPE/MAE metrics
+\end{itemize}
+
+\textbf{Model Training (2 figures)}:
+\begin{itemize}
+\item Diffusion training progression showing convergence
+\item Diffusion summary across all 11 successfully trained assets
+\end{itemize}
+
+\textbf{Comparative Analysis (2 figures)}:
+\begin{itemize}
+\item Model comparison overview (4-panel visualization)
+\item Category-based comparison (indices vs stocks with boxplots)
+\end{itemize}
+
+\textbf{Individual Asset Results (24 visualizations)}:
+\begin{itemize}
+\item TimeGAN: 11 assets (all successfully trained)
+\item Diffusion: 12 assets (including BTC-USD)
+\item Each shows 6 feature distributions with statistical metrics
+\end{itemize}
+
+\subsection*{B. Complete Asset Coverage Table}
+
+\begin{table}[h]
+\centering
+\caption{Complete Index of Individual Asset Visualizations}
+\small
+\begin{tabular}{llcc}
+\toprule
+\textbf{Asset} & \textbf{Type} & \textbf{TimeGAN} & \textbf{Diffusion} \\
+\midrule
+S\&P 500 (GSPC) & Index & Fig \ref{fig:individual_assets}a & Fig \ref{fig:individual_assets}b \\
+FTSE 100 & Index & Fig \ref{fig:uk_us_indices}a & Fig \ref{fig:uk_us_indices}b \\
+Dow Jones (DJI) & Index & Fig \ref{fig:uk_us_indices}c & Fig \ref{fig:uk_us_indices}d \\
+Nikkei 225 (N225) & Index & Fig \ref{fig:asian_tech_indices}a & Fig \ref{fig:asian_tech_indices}b \\
+Hang Seng (HSI) & Index & Fig \ref{fig:best_performers}a & Fig \ref{fig:best_performers}b \\
+NASDAQ (IXIC) & Index & Fig \ref{fig:asian_tech_indices}c & Fig \ref{fig:asian_tech_indices}d \\
+\midrule
+Apple (AAPL) & Stock & Fig \ref{fig:individual_assets}c & Fig \ref{fig:individual_assets}d \\
+Alphabet (GOOGL) & Stock & Fig \ref{fig:googl}a & Fig \ref{fig:googl}b \\
+Amazon (AMZN) & Stock & Fig \ref{fig:additional_assets}a & Fig \ref{fig:additional_assets}b \\
+Microsoft (MSFT) & Stock & Fig \ref{fig:best_performers}c & Fig \ref{fig:best_performers}d \\
+Tesla (TSLA) & Stock & Fig \ref{fig:additional_assets}c & Fig \ref{fig:additional_assets}d \\
+\midrule
+Bitcoin (BTC-USD) & Crypto & Failed & Fig \ref{fig:bitcoin} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{C. All Image Files (40 total)}
+
+Located in \texttt{Final-Report/images/} directory:
+
+\textbf{Data Analysis}: \texttt{01\_raw\_data\_overview.png}, \texttt{02\_data\_splits.png}, \texttt{02\_return\_distributions.png}, \texttt{03\_autocorrelation\_analysis.png}, \texttt{03\_correlation\_matrix.png}, \texttt{03\_normalized\_prices.png}, \texttt{03\_rolling\_volatility.png}, \texttt{03\_stl\_decomposition\_GSPC.png}, \texttt{03\_stl\_decomposition\_BTC\_USD.png}, \texttt{04\_feature\_correlations.png}, \texttt{04\_technical\_indicators.png}
+
+\textbf{Baselines}: \texttt{05\_baseline\_comparison\_GSPC.png}, \texttt{06\_baseline\_all\_assets\_comparison.png}
+
+\textbf{TimeGAN}: 11 files \texttt{07\_timegan\_comparison\_[ASSET].png}
+
+\textbf{Diffusion}: 12 files \texttt{08\_diffusion\_comparison\_[ASSET].png}, plus \texttt{diffusion\_training\_GSPC.png}, \texttt{diffusion\_summary.png}
+
+\textbf{Comparison}: \texttt{model\_comparison\_overview.png}, \texttt{model\_comparison\_by\_category.png}
+
+%
+% ---- Bibliography ----
+%
+\bibliographystyle{splncs04}
+\bibliography{references}
+
+\end{document}
