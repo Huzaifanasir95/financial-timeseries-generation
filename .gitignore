@@ -86,3 +86,6 @@ data/synthetic/diffusion/N225_synthetic.csv
 data/synthetic/diffusion/TSLA_synthetic.csv
 data/synthetic/diffusion/TSLA_synthetic.csv
 /Final-Report/images
+app/CORRECTED_VALUES_SUMMARY.md
+app/FIXES_APPLIED.md
+app/VALUE_CORRECTIONS_NEEDED.md

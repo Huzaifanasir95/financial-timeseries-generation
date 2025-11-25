@@ -41,7 +41,8 @@
                     </div>
                 </div>
                 <p class="text-gray-600">
-                    Superior performance with 48.4% better mean difference scores
+                    Superior performance with {{ "%.1f"|format(stats.overall_comparison.improvement_percentage) }}%
+                    better mean difference scores
                 </p>
             </div>
 
@@ -57,7 +58,7 @@
                     </div>
                 </div>
                 <p class="text-gray-600">
-                    Indices, stocks, and cryptocurrency (11 compared)
+                    Indices, stocks, and cryptocurrency ({{ stats.win_rates.total_assets }} compared)
                 </p>
             </div>
 
@@ -69,11 +70,12 @@
                     </div>
                     <div>
                         <h3 class="text-gray-600 text-sm font-semibold uppercase">Statistical Sig.</h3>
-                        <p class="text-2xl font-bold text-gray-800">p=0.0004</p>
+                        <p class="text-2xl font-bold text-gray-800">p={{ "%.4f"|format(stats.overall_comparison.p_value)
+                            }}</p>
                     </div>
                 </div>
                 <p class="text-gray-600">
-                    Cohen's d = -2.21 (very large effect size)
+                    Cohen's d = {{ "%.2f"|format(stats.overall_comparison.cohens_d) }} (very large effect size)
                 </p>
             </div>
         </div>
@@ -124,21 +126,32 @@
                     <tbody class="divide-y divide-gray-200">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 font-medium text-gray-800">Mean Difference (Avg)</td>
-                            <td class="px-6 py-4 text-center text-blue-600 font-bold">0.0663 ± 0.0298</td>
-                            <td class="px-6 py-4 text-center text-purple-600 font-bold">0.1286 ± 0.0207</td>
-                            <td class="px-6 py-4 text-center text-green-600 font-bold">48.4%</td>
+                            <td class="px-6 py-4 text-center text-blue-600 font-bold">{{
+                                "%.4f"|format(stats.overall_comparison.timegan_mean_diff_avg) }} ± {{
+                                "%.4f"|format(stats.overall_comparison.timegan_mean_diff_std) }}</td>
+                            <td class="px-6 py-4 text-center text-purple-600 font-bold">{{
+                                "%.4f"|format(stats.overall_comparison.diffusion_mean_diff_avg) }} ± {{
+                                "%.4f"|format(stats.overall_comparison.diffusion_mean_diff_std) }}</td>
+                            <td class="px-6 py-4 text-center text-green-600 font-bold">{{
+                                "%.1f"|format(stats.overall_comparison.improvement_percentage) }}%</td>
                         </tr>
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 font-medium text-gray-800">KS Statistic (Avg)</td>
                             <td class="px-6 py-4 text-center text-blue-600 font-bold">N/A</td>
-                            <td class="px-6 py-4 text-center text-purple-600 font-bold">0.3863 ± 0.0467</td>
+                            <td class="px-6 py-4 text-center text-purple-600 font-bold">{{
+                                "%.4f"|format(stats.overall_comparison.diffusion_ks_avg) }} ± {{
+                                "%.4f"|format(stats.overall_comparison.diffusion_ks_std) }}</td>
                             <td class="px-6 py-4 text-center text-gray-600 font-bold">-</td>
                         </tr>
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 font-medium text-gray-800">Win Rate</td>
-                            <td class="px-6 py-4 text-center text-blue-600 font-bold">81.8% (9/11)</td>
-                            <td class="px-6 py-4 text-center text-purple-600 font-bold">0% (0/11)</td>
-                            <td class="px-6 py-4 text-center text-green-600 font-bold">+81.8%</td>
+                            <td class="px-6 py-4 text-center text-blue-600 font-bold">{{
+                                "%.1f"|format(stats.win_rates.timegan_win_rate) }}% ({{ stats.win_rates.timegan_wins
+                                }}/{{ stats.win_rates.total_assets }})</td>
+                            <td class="px-6 py-4 text-center text-purple-600 font-bold">0% ({{
+                                stats.win_rates.diffusion_wins }}/{{ stats.win_rates.total_assets }})</td>
+                            <td class="px-6 py-4 text-center text-green-600 font-bold">+{{
+                                "%.1f"|format(stats.win_rates.timegan_win_rate) }}%</td>
                         </tr>
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 font-medium text-gray-800">Training Time (per asset)</td>
@@ -164,36 +177,48 @@
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl">
-                    <h4 class="font-bold text-blue-900 mb-3">Indices (6 assets)</h4>
+                    <h4 class="font-bold text-blue-900 mb-3">Indices ({{ stats.category_performance.indices.count }}
+                        assets)</h4>
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between">
                             <span class="text-blue-800">TimeGAN Avg:</span>
-                            <span class="font-bold text-blue-900">0.0566 ± 0.0293</span>
+                            <span class="font-bold text-blue-900">{{
+                                "%.4f"|format(stats.category_performance.indices.timegan_avg) }} ± {{
+                                "%.4f"|format(stats.category_performance.indices.timegan_std) }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-blue-800">Diffusion Avg:</span>
-                            <span class="font-bold text-blue-900">0.1292 ± 0.0223</span>
+                            <span class="font-bold text-blue-900">{{
+                                "%.4f"|format(stats.category_performance.indices.diffusion_avg) }} ± {{
+                                "%.4f"|format(stats.category_performance.indices.diffusion_std) }}</span>
                         </div>
                         <div class="flex justify-between border-t-2 border-blue-300 pt-2 mt-2">
                             <span class="text-blue-800 font-bold">Improvement:</span>
-                            <span class="font-bold text-green-600">56.2%</span>
+                            <span class="font-bold text-green-600">{{
+                                "%.1f"|format(stats.category_performance.indices.improvement) }}%</span>
                         </div>
                     </div>
                 </div>
                 <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl">
-                    <h4 class="font-bold text-purple-900 mb-3">Stocks (5 assets)</h4>
+                    <h4 class="font-bold text-purple-900 mb-3">Stocks ({{ stats.category_performance.stocks.count }}
+                        assets)</h4>
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between">
                             <span class="text-purple-800">TimeGAN Avg:</span>
-                            <span class="font-bold text-purple-900">0.0759 ± 0.0297</span>
+                            <span class="font-bold text-purple-900">{{
+                                "%.4f"|format(stats.category_performance.stocks.timegan_avg) }} ± {{
+                                "%.4f"|format(stats.category_performance.stocks.timegan_std) }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-purple-800">Diffusion Avg:</span>
-                            <span class="font-bold text-purple-900">0.1249 ± 0.0140</span>
+                            <span class="font-bold text-purple-900">{{
+                                "%.4f"|format(stats.category_performance.stocks.diffusion_avg) }} ± {{
+                                "%.4f"|format(stats.category_performance.stocks.diffusion_std) }}</span>
                         </div>
                         <div class="flex justify-between border-t-2 border-purple-300 pt-2 mt-2">
                             <span class="text-purple-800 font-bold">Improvement:</span>
-                            <span class="font-bold text-green-600">39.2%</span>
+                            <span class="font-bold text-green-600">{{
+                                "%.1f"|format(stats.category_performance.stocks.improvement) }}%</span>
                         </div>
                     </div>
                 </div>
@@ -213,7 +238,8 @@
                     </li>
                     <li class="flex items-start">
                         <i class="fas fa-chevron-right text-green-600 mr-2 mt-1"></i>
-                        <span>Better mean difference: 0.0663 vs 0.1286</span>
+                        <span>Better mean difference: {{ "%.4f"|format(stats.overall_comparison.timegan_mean_diff_avg)
+                            }} vs {{ "%.4f"|format(stats.overall_comparison.diffusion_mean_diff_avg) }}</span>
                     </li>
                     <li class="flex items-start">
                         <i class="fas fa-chevron-right text-green-600 mr-2 mt-1"></i>

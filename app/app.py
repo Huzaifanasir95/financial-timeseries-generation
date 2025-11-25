@@ -7,6 +7,7 @@ from flask import Flask, render_template, jsonify
 from config import Config
 from routes import timegan_bp, diffusion_bp, comparison_bp, statistics_bp, technical_bp, recommendations_bp
 from routes.models import models_bp
+from data import STATISTICAL_TESTS
 import os
 
 def create_app(config_class=Config):
@@ -25,7 +26,7 @@ def create_app(config_class=Config):
     @app.route('/')
     def index():
         """Executive Summary / Home Page"""
-        return render_template('index.html')
+        return render_template('index.html', stats=STATISTICAL_TESTS)
     
     @app.route('/api/health')
     def health():

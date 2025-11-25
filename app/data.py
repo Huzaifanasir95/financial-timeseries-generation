@@ -390,13 +390,13 @@ DIFFUSION_RESULTS = {
 # Statistical Test Results - REAL FROM EXPERIMENTS
 STATISTICAL_TESTS = {
     "overall_comparison": {
-        "timegan_mean_diff_avg": 0.0663,
-        "timegan_mean_diff_std": 0.0298,
-        "diffusion_mean_diff_avg": 0.1286,
-        "diffusion_mean_diff_std": 0.0207,
-        "diffusion_ks_avg": 0.3863,
+        "timegan_mean_diff_avg": 0.0674,
+        "timegan_mean_diff_std": 0.0334,
+        "diffusion_mean_diff_avg": 0.1312,
+        "diffusion_mean_diff_std": 0.0224,
+        "diffusion_ks_avg": 0.3854,
         "diffusion_ks_std": 0.0467,
-        "improvement_percentage": 48.4,
+        "improvement_percentage": 48.6,
         "p_value": 0.0004,  # Statistically significant
         "cohens_d": -2.21,  # Very large effect size
         "conclusion": "TimeGAN performs significantly better (p<0.05, Cohen's d > 0.5)"
@@ -411,19 +411,19 @@ STATISTICAL_TESTS = {
     "category_performance": {
         "indices": {
             "count": 6,
-            "timegan_avg": 0.0566,
-            "timegan_std": 0.0293,
+            "timegan_avg": 0.0600,
+            "timegan_std": 0.0328,
             "diffusion_avg": 0.1292,
             "diffusion_std": 0.0223,
-            "improvement": 56.2
+            "improvement": 53.6
         },
         "stocks": {
             "count": 5,
-            "timegan_avg": 0.0759,
-            "timegan_std": 0.0297,
+            "timegan_avg": 0.0763,
+            "timegan_std": 0.0341,
             "diffusion_avg": 0.1249,
-            "diffusion_std": 0.0140,
-            "improvement": 39.2
+            "diffusion_std": 0.0159,
+            "improvement": 38.9
         }
     }
 }
