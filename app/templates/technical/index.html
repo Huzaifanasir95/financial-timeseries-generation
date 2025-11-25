@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Technical Deep Dive - Financial Timeseries Generation{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="content-wrapper p-8 fade-in">
+        <div class="flex items-center mb-6">
+            <div class="w-16 h-16 bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-2xl flex items-center justify-center mr-4">
+                <i class="fas fa-code text-white text-3xl"></i>
+            </div>
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800">Technical Deep Dive</h1>
+                <p class="text-gray-600 mt-1">Mathematical Formulations & Implementation Details</p>
+            </div>
+        </div>
+
+        <!-- TimeGAN Mathematical Formulation -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-brain text-blue-600 mr-2"></i>TimeGAN Mathematical Formulation
+            </h3>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h4 class="font-bold text-gray-800 mb-4 text-xl">Objective Function</h4>
+                <div class="bg-gray-50 p-6 rounded-lg font-mono text-sm mb-4 overflow-x-auto">
+                    <div class="mb-3"><strong>Total Loss:</strong></div>
+                    <div class="mb-4">L_Total = L_R + λ·L_S + γ·L_U</div>
+                    
+                    <div class="mb-3"><strong>1. Reconstruction Loss (Autoencoder):</strong></div>
+                    <div class="mb-4">L_R = E[||X - r(e(X))||²]</div>
+                    
+                    <div class="mb-3"><strong>2. Supervised Loss (Temporal Dynamics):</strong></div>
+                    <div class="mb-4">L_S = E[||H_next - g(H_current, Z)||²]</div>
+                    
+                    <div class="mb-3"><strong>3. Unsupervised Adversarial Loss:</strong></div>
+                    <div class="mb-2">L_U = E[log d(H)] + E[log(1 - d(H_synthetic))]</div>
+                    <div>L_U += E[log d(X)] + E[log(1 - d(X_synthetic))]</div>
+                </div>
+                
+                <div class="bg-blue-50 border-l-4 border-blue-600 p-4 rounded-lg">
+                    <p class="text-gray-700">
+                        <strong class="text-blue-800">Key Innovation:</strong> The supervised loss L_S ensures temporal 
+                        consistency by training the generator to predict the next latent state, preserving autocorrelation patterns.
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h4 class="font-bold text-gray-800 mb-4 text-xl">Architecture Components</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg">
+                        <h5 class="font-bold text-blue-800 mb-2">Embedding Network e(·)</h5>
+                        <p class="text-gray-700 text-sm mb-2">Maps X → H (feature to latent space)</p>
+                        <ul class="text-xs text-gray-600 space-y-1">
+                            <li>• 3-layer LSTM (256 hidden units)</li>
+                            <li>• Input: Returns sequence</li>
+                            <li>• Output: Latent vectors</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg">
+                        <h5 class="font-bold text-green-800 mb-2">Recovery Network r(·)</h5>
+                        <p class="text-gray-700 text-sm mb-2">Maps H → X (latent to feature space)</p>
+                        <ul class="text-xs text-gray-600 space-y-1">
+                            <li>• 3-layer LSTM (256 hidden units)</li>
+                            <li>• Reconstruction objective</li>
+                            <li>• MSE loss minimization</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg">
+                        <h5 class="font-bold text-purple-800 mb-2">Generator g(·)</h5>
+                        <p class="text-gray-700 text-sm mb-2">Maps (H_t, Z_t) → H_{t+1}</p>
+                        <ul class="text-xs text-gray-600 space-y-1">
+                            <li>• 3-layer LSTM (256 hidden units)</li>
+                            <li>• Noise input: Z ~ N(0, 1)</li>
+                            <li>• Step-ahead prediction</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-lg">
+                        <h5 class="font-bold text-amber-800 mb-2">Discriminator d(·)</h5>
+                        <p class="text-gray-700 text-sm mb-2">Distinguishes real vs synthetic</p>
+                        <ul class="text-xs text-gray-600 space-y-1">
+                            <li>• 3-layer LSTM (256 hidden units)</li>
+                            <li>• Binary classification</li>
+                            <li>• Both H and X spaces</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diffusion Mathematical Formulation -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-wave-square text-purple-600 mr-2"></i>Diffusion Model Formulation
+            </h3>
+            
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h4 class="font-bold text-gray-800 mb-4 text-xl">Forward & Reverse Processes</h4>
+                <div class="bg-gray-50 p-6 rounded-lg font-mono text-sm mb-4 overflow-x-auto">
+                    <div class="mb-3"><strong>Forward Diffusion Process:</strong></div>
+                    <div class="mb-2">q(x_t | x_prev) = N(x_t; sqrt(1-β_t) * x_prev, β_t * I)</div>
+                    <div class="mb-4">x_t = sqrt(α̅_t) * x_0 + sqrt(1-α̅_t) * ε</div>
+                    
+                    <div class="mb-3"><strong>Reverse Process (Learned):</strong></div>
+                    <div class="mb-4">p_θ(x_prev | x_t) = N(x_prev; μ_θ(x_t, t), Σ_θ(x_t, t))</div>
+                    
+                    <div class="mb-3"><strong>Simplified Training Objective:</strong></div>
+                    <div class="mb-4">L_simple = E[||ε - ε_θ(x_t, t)||²]</div>
+                    
+                    <div class="mb-3"><strong>Noise Schedule (Linear):</strong></div>
+                    <div class="mb-2">β_t ∈ [0.0001, 0.02] for t ∈ [1, 1000]</div>
+                    <div>α̅_t = ∏(s=1 to t) (1 - β_s)</div>
+                </div>
+                
+                <div class="bg-purple-50 border-l-4 border-purple-600 p-4 rounded-lg">
+                    <p class="text-gray-700">
+                        <strong class="text-purple-800">Key Innovation:</strong> Predicting noise ε instead of mean μ 
+                        simplifies training and improves sample quality. The U-Net architecture processes time embeddings.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Implementation Details -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-cogs text-indigo-600 mr-2"></i>Implementation Details
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h4 class="font-bold text-gray-800 mb-4">TimeGAN Training</h4>
+                    <ul class="space-y-3 text-sm text-gray-700">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                            <span><strong>Optimizer:</strong> Adam (lr=0.001, β₁=0.9, β₂=0.999)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                            <span><strong>Sequence Length:</strong> 24 timesteps (sliding window)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                            <span><strong>Loss Weights:</strong> λ=1.0, γ=1.0</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-600 mr-2 mt-1"></i>
+                            <span><strong>Normalization:</strong> MinMax scaling [0, 1]</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h4 class="font-bold text-gray-800 mb-4">Diffusion Training</h4>
+                    <ul class="space-y-3 text-sm text-gray-700">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-purple-600 mr-2 mt-1"></i>
+                            <span><strong>Optimizer:</strong> AdamW (lr=0.0002, weight_decay=0.01)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-purple-600 mr-2 mt-1"></i>
+                            <span><strong>U-Net:</strong> 4 downsampling + 4 upsampling blocks</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-purple-600 mr-2 mt-1"></i>
+                            <span><strong>Time Embedding:</strong> Sinusoidal position encoding</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-purple-600 mr-2 mt-1"></i>
+                            <span><strong>Sampling:</strong> DDPM with 1000 reverse steps</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Computational Requirements -->
+        <div class="bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-server text-gray-700 mr-2"></i>Computational Requirements
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-sm text-gray-600 font-semibold mb-2">GPU</div>
+                    <div class="text-lg font-bold text-gray-800">NVIDIA RTX 3090</div>
+                    <div class="text-xs text-gray-600">24GB VRAM</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-sm text-gray-600 font-semibold mb-2">Framework</div>
+                    <div class="text-lg font-bold text-gray-800">PyTorch 2.0</div>
+                    <div class="text-xs text-gray-600">CUDA 11.8</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-sm text-gray-600 font-semibold mb-2">Training Time</div>
+                    <div class="text-lg font-bold text-gray-800">~12 hrs avg</div>
+                    <div class="text-xs text-gray-600">Per asset</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Statistical Analysis - Financial Timeseries Generation{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="content-wrapper p-8 fade-in">
+        <div class="flex items-center mb-6">
+            <div
+                class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl flex items-center justify-center mr-4">
+                <i class="fas fa-chart-bar text-white text-3xl"></i>
+            </div>
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800">Statistical Analysis</h1>
+                <p class="text-gray-600 mt-1">Hypothesis Testing & Significance Analysis</p>
+            </div>
+        </div>
+
+        <!-- Overall Comparison Summary -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-trophy text-green-600 mr-2"></i>Overall Performance Summary
+            </h3>
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-500 rounded-xl p-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="text-sm text-gray-600 font-semibold mb-2">TimeGAN Mean Diff</div>
+                        <div class="text-3xl font-bold text-blue-600">{{
+                            "%.4f"|format(stats.overall_comparison.timegan_mean_diff_avg) }}</div>
+                        <div class="text-xs text-gray-600 mt-1">± {{
+                            "%.4f"|format(stats.overall_comparison.timegan_mean_diff_std) }}</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="text-sm text-gray-600 font-semibold mb-2">Diffusion Mean Diff</div>
+                        <div class="text-3xl font-bold text-purple-600">{{
+                            "%.4f"|format(stats.overall_comparison.diffusion_mean_diff_avg) }}</div>
+                        <div class="text-xs text-gray-600 mt-1">± {{
+                            "%.4f"|format(stats.overall_comparison.diffusion_mean_diff_std) }}</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="text-sm text-gray-600 font-semibold mb-2">Diffusion KS Avg</div>
+                        <div class="text-3xl font-bold text-indigo-600">{{
+                            "%.4f"|format(stats.overall_comparison.diffusion_ks_avg) }}</div>
+                        <div class="text-xs text-gray-600 mt-1">± {{
+                            "%.4f"|format(stats.overall_comparison.diffusion_ks_std) }}</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="text-sm text-gray-600 font-semibold mb-2">Improvement</div>
+                        <div class="text-3xl font-bold text-green-600">{{
+                            "%.1f"|format(stats.overall_comparison.improvement_percentage) }}%</div>
+                        <div class="text-xs text-gray-600 mt-1">TimeGAN Better</div>
+                    </div>
+                </div>
+                <div class="bg-green-100 border-l-4 border-green-600 p-4 rounded-lg">
+                    <p class="font-bold text-green-800 flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        {{ stats.overall_comparison.conclusion }}
+                    </p>
+                    <p class="text-sm text-gray-700 mt-2">
+                        Statistical significance confirmed with p={{ "%.4f"|format(stats.overall_comparison.p_value) }}
+                        and Cohen's d={{ "%.2f"|format(stats.overall_comparison.cohens_d) }} (very large effect size).
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Win Rates -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-medal text-yellow-600 mr-2"></i>Win Rate Analysis
+            </h3>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="text-6xl font-bold text-blue-600 mb-2">{{ stats.win_rates.timegan_wins }}</div>
+                        <div class="text-sm text-gray-600 font-semibold">TimeGAN Wins</div>
+                        <div class="text-xs text-gray-500 mt-1">{{ "%.1f"|format(stats.win_rates.timegan_win_rate) }}%
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-6xl font-bold text-purple-600 mb-2">{{ stats.win_rates.diffusion_wins }}</div>
+                        <div class="text-sm text-gray-600 font-semibold">Diffusion Wins</div>
+                        <div class="text-xs text-gray-500 mt-1">0%</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-6xl font-bold text-gray-600 mb-2">{{ stats.win_rates.ties }}</div>
+                        <div class="text-sm text-gray-600 font-semibold">Ties</div>
+                        <div class="text-xs text-gray-500 mt-1">{{ "%.1f"|format((stats.win_rates.ties /
+                            stats.win_rates.total_assets) * 100) }}%</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-6xl font-bold text-green-600 mb-2">{{ stats.win_rates.total_assets }}</div>
+                        <div class="text-sm text-gray-600 font-semibold">Total Assets</div>
+                        <div class="text-xs text-gray-500 mt-1">Compared</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Performance -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-layer-group text-blue-600 mr-2"></i>Performance by Asset Category
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Indices -->
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border-2 border-blue-300">
+                    <h4 class="text-xl font-bold text-blue-900 mb-4 flex items-center">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Indices ({{ stats.category_performance.indices.count }} assets)
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">TimeGAN Avg:</span>
+                                <span class="font-bold text-blue-900">{{
+                                    "%.4f"|format(stats.category_performance.indices.timegan_avg) }} ± {{
+                                    "%.4f"|format(stats.category_performance.indices.timegan_std) }}</span>
+                            </div>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Diffusion Avg:</span>
+                                <span class="font-bold text-purple-900">{{
+                                    "%.4f"|format(stats.category_performance.indices.diffusion_avg) }} ± {{
+                                    "%.4f"|format(stats.category_performance.indices.diffusion_std) }}</span>
+                            </div>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-lg border-l-4 border-green-600">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-bold text-green-800">Improvement:</span>
+                                <span class="font-bold text-green-900 text-xl">{{
+                                    "%.1f"|format(stats.category_performance.indices.improvement) }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stocks -->
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border-2 border-purple-300">
+                    <h4 class="text-xl font-bold text-purple-900 mb-4 flex items-center">
+                        <i class="fas fa-building mr-2"></i>
+                        Stocks ({{ stats.category_performance.stocks.count }} assets)
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">TimeGAN Avg:</span>
+                                <span class="font-bold text-blue-900">{{
+                                    "%.4f"|format(stats.category_performance.stocks.timegan_avg) }} ± {{
+                                    "%.4f"|format(stats.category_performance.stocks.timegan_std) }}</span>
+                            </div>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Diffusion Avg:</span>
+                                <span class="font-bold text-purple-900">{{
+                                    "%.4f"|format(stats.category_performance.stocks.diffusion_avg) }} ± {{
+                                    "%.4f"|format(stats.category_performance.stocks.diffusion_std) }}</span>
+                            </div>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-lg border-l-4 border-green-600">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-bold text-green-800">Improvement:</span>
+                                <span class="font-bold text-green-900 text-xl">{{
+                                    "%.1f"|format(stats.category_performance.stocks.improvement) }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistical Tests Explanation -->
+        <div class="bg-gray-50 rounded-xl p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-info-circle text-indigo-600 mr-2"></i>Statistical Methods
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-bold text-gray-800 mb-2">Kolmogorov-Smirnov Test</h4>
+                    <p class="text-gray-700 text-sm">
+                        Measures maximum difference between cumulative distributions. Lower scores indicate
+                        better distributional similarity. Thresholds: KS < 0.1 (excellent), 0.1-0.3 (good), 0.3-0.5
+                            (fair). </p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-800 mb-2">Paired T-Test</h4>
+                    <p class="text-gray-700 text-sm">
+                        Tests null hypothesis that paired samples have equal means. P-value < 0.05 indicates significant
+                            difference at 95% confidence level. Used for comparing TimeGAN vs Diffusion. </p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-800 mb-2">Cohen's d (Effect Size)</h4>
+                    <p class="text-gray-700 text-sm">
+                        Standardized measure of effect size: |d| < 0.2 (small), 0.2-0.5 (medium), 0.5-0.8 (large),> 0.8
+                            (very large). Our d=-2.21 indicates TimeGAN substantially outperforms Diffusion.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-800 mb-2">Mean Difference</h4>
+                    <p class="text-gray-700 text-sm">
+                        Absolute difference between real and synthetic feature means. Lower values indicate better
+                        preservation of central tendency. Critical for financial data where accurate mean returns
+                        matter.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

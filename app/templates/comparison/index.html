@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Comparative Analysis - Financial Timeseries Generation{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="content-wrapper p-8 fade-in">
+        <div class="flex items-center mb-6">
+            <div
+                class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-700 rounded-2xl flex items-center justify-center mr-4">
+                <i class="fas fa-balance-scale text-white text-3xl"></i>
+            </div>
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800">Comparative Analysis</h1>
+                <p class="text-gray-600 mt-1">TimeGAN vs Diffusion: Head-to-Head Comparison</p>
+            </div>
+        </div>
+
+        <!-- Overall Winner -->
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-500 rounded-xl p-6 mb-8">
+            <h3 class="text-2xl font-bold text-green-800 mb-3 flex items-center">
+                <i class="fas fa-trophy text-yellow-500 mr-3 text-3xl"></i>
+                TimeGAN Wins: 81.8% Win Rate (9/11 Assets)
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-sm text-gray-600 font-semibold mb-1">Mean Difference</div>
+                    <div class="text-4xl font-bold text-green-600">48.4%</div>
+                    <div class="text-xs text-gray-600 mt-1">Better (0.0663 vs 0.1286)</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-sm text-gray-600 font-semibold mb-1">Statistical Sig.</div>
+                    <div class="text-4xl font-bold text-green-600">p=0.0004</div>
+                    <div class="text-xs text-gray-600 mt-1">Highly significant</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-sm text-gray-600 font-semibold mb-1">Effect Size</div>
+                    <div class="text-4xl font-bold text-green-600">d=-2.21</div>
+                    <div class="text-xs text-gray-600 mt-1">Very large effect</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-sm text-gray-600 font-semibold mb-1">Training Speed</div>
+                    <div class="text-4xl font-bold text-green-600">2.5×</div>
+                    <div class="text-xs text-gray-600 mt-1">Faster (18 vs 45 min)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Asset-by-Asset Comparison</h3>
+            <div class="overflow-x-auto bg-white rounded-xl shadow-md">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gradient-to-r from-gray-100 to-gray-200">
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-700">Asset</th>
+                            <th class="px-6 py-4 text-center text-sm font-bold text-blue-700">TimeGAN Mean Diff</th>
+                            <th class="px-6 py-4 text-center text-sm font-bold text-purple-700">Diffusion Mean Diff</th>
+                            <th class="px-6 py-4 text-center text-sm font-bold text-indigo-700">Diffusion KS</th>
+                            <th class="px-6 py-4 text-center text-sm font-bold text-green-700">Improvement</th>
+                            <th class="px-6 py-4 text-center text-sm font-bold text-gray-700">Winner</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for item in data %}
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-gray-800">{{ item.name }}</div>
+                                <div class="text-xs text-gray-500">{{ item.code }} - {{ item.type }}</div>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="inline-block bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full">
+                                    {{ "%.4f"|format(item.timegan_mean_diff) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span
+                                    class="inline-block bg-purple-100 text-purple-800 font-bold px-3 py-1 rounded-full">
+                                    {{ "%.4f"|format(item.diffusion_mean_diff) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span
+                                    class="inline-block bg-indigo-100 text-indigo-800 font-bold px-3 py-1 rounded-full">
+                                    {{ "%.4f"|format(item.diffusion_ks) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span
+                                    class="inline-block {% if item.improvement > 0 %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} font-bold px-3 py-1 rounded-full">
+                                    {{ "%.1f"|format(item.improvement) }}%
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                {% if item.winner == 'TimeGAN' %}
+                                <i class="fas fa-trophy text-blue-500 text-xl"></i>
+                                <div class="text-xs text-blue-600 font-semibold">TimeGAN</div>
+                                {% elif item.winner == 'Diffusion' %}
+                                <i class="fas fa-trophy text-purple-500 text-xl"></i>
+                                <div class="text-xs text-purple-600 font-semibold">Diffusion</div>
+                                {% else %}
+                                <i class="fas fa-equals text-gray-500 text-xl"></i>
+                                <div class="text-xs text-gray-600 font-semibold">Tie</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Visual Comparison Chart -->
+        <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Mean Difference Comparison Chart</h3>
+            <canvas id="comparisonChart" height="80"></canvas>
+        </div>
+
+        <!-- Key Insights -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg">
+                <h4 class="font-bold text-blue-800 mb-3 flex items-center">
+                    <i class="fas fa-lightbulb mr-2"></i>Why TimeGAN Wins
+                </h4>
+                <ul class="space-y-2 text-gray-700 text-sm">
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-blue-600 mr-2 mt-1"></i>
+                        <span><strong>Supervised Loss:</strong> Step-ahead prediction preserves temporal
+                            dependencies</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-blue-600 mr-2 mt-1"></i>
+                        <span><strong>Latent Space:</strong> Learns meaningful temporal representations via
+                            embedder</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-blue-600 mr-2 mt-1"></i>
+                        <span><strong>Joint Training:</strong> Combines reconstruction + supervised + adversarial
+                            losses</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-blue-600 mr-2 mt-1"></i>
+                        <span><strong>GRU Architecture:</strong> Explicitly models sequential dependencies</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg">
+                <h4 class="font-bold text-red-800 mb-3 flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Why Diffusion Struggles
+                </h4>
+                <ul class="space-y-2 text-gray-700 text-sm">
+                    <li class="flex items-start">
+                        <i class="fas fa-times text-red-600 mr-2 mt-1"></i>
+                        <span><strong>Independent Timesteps:</strong> Forward process treats time as independent</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-times text-red-600 mr-2 mt-1"></i>
+                        <span><strong>No Temporal Loss:</strong> Transformer doesn't explicitly model
+                            autocorrelation</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-times text-red-600 mr-2 mt-1"></i>
+                        <span><strong>Computational Cost:</strong> 1000 diffusion steps + 100 inference steps</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-times text-red-600 mr-2 mt-1"></i>
+                        <span><strong>Larger Model:</strong> 800K params vs 460K (1.7× more)</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Prepare data for chart
+    const assetNames = {{ data | map(attribute = 'name') | list | tojson }};
+    const timeganScores = {{ data | map(attribute = 'timegan_mean_diff') | list | tojson }};
+    const diffusionScores = {{ data | map(attribute = 'diffusion_mean_diff') | list | tojson }};
+
+    // Create comparison chart
+    const ctx = document.getElementById('comparisonChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: assetNames,
+            datasets: [
+                {
+                    label: 'TimeGAN Mean Difference',
+                    data: timeganScores,
+                    backgroundColor: 'rgba(37, 99, 235, 0.8)',
+                    borderColor: 'rgb(37, 99, 235)',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Diffusion Mean Difference',
+                    data: diffusionScores,
+                    backgroundColor: 'rgba(168, 85, 247, 0.8)',
+                    borderColor: 'rgb(168, 85, 247)',
+                    borderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Mean Difference (Lower is Better)',
+                        font: { size: 14, weight: 'bold' }
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Asset',
+                        font: { size: 14, weight: 'bold' }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        font: { size: 12, weight: 'bold' }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return context.dataset.label + ': ' + context.parsed.y.toFixed(4);
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

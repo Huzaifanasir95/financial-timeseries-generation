@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block title %}Trained Models - Financial Timeseries Generation{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="content-wrapper p-8 fade-in">
+        <div class="flex items-center mb-6">
+            <div
+                class="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-700 rounded-2xl flex items-center justify-center mr-4">
+                <i class="fas fa-database text-white text-3xl"></i>
+            </div>
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800">Trained Models</h1>
+                <p class="text-gray-600 mt-1">Inspect, Download & Use Pre-trained Models</p>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border-l-4 border-blue-600">
+                <div class="flex items-center mb-3">
+                    <i class="fas fa-brain text-blue-600 text-2xl mr-3"></i>
+                    <h3 class="text-lg font-bold text-blue-900">TimeGAN Models</h3>
+                </div>
+                <div class="text-3xl font-bold text-blue-900 mb-1">{{ summary.timegan.count }}</div>
+                <div class="text-sm text-blue-700">Assets ({{ summary.timegan.total_files }} files)</div>
+                <div class="text-xs text-blue-600 mt-2">Total: {{ "%.1f"|format(summary.timegan.total_size_mb) }} MB
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl border-l-4 border-purple-600">
+                <div class="flex items-center mb-3">
+                    <i class="fas fa-wave-square text-purple-600 text-2xl mr-3"></i>
+                    <h3 class="text-lg font-bold text-purple-900">Diffusion Models</h3>
+                </div>
+                <div class="text-3xl font-bold text-purple-900 mb-1">{{ summary.diffusion.count }}</div>
+                <div class="text-sm text-purple-700">Assets ({{ summary.diffusion.total_files }} files)</div>
+                <div class="text-xs text-purple-600 mt-2">Total: {{ "%.1f"|format(summary.diffusion.total_size_mb) }} MB
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border-l-4 border-green-600">
+                <div class="flex items-center mb-3">
+                    <i class="fas fa-hdd text-green-600 text-2xl mr-3"></i>
+                    <h3 class="text-lg font-bold text-green-900">Total Storage</h3>
+                </div>
+                <div class="text-3xl font-bold text-green-900 mb-1">{{ "%.1f"|format(summary.total_size_mb) }}</div>
+                <div class="text-sm text-green-700">MB</div>
+                <div class="text-xs text-green-600 mt-2">{{ summary.timegan.total_files + summary.diffusion.total_files
+                    }} total files</div>
+            </div>
+        </div>
+
+        <!-- TimeGAN Models Section -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-brain text-blue-600 mr-3"></i>TimeGAN Models
+            </h3>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <p class="text-gray-700 mb-4">
+                    Each TimeGAN model consists of <strong>5 neural networks</strong> trained together:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6">
+                    {% for network in summary.timegan.networks_per_asset %}
+                    <div class="bg-blue-50 p-3 rounded-lg text-center">
+                        <i class="fas fa-network-wired text-blue-600 mb-2"></i>
+                        <div class="text-sm font-semibold text-blue-900">{{ network|title }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Asset Selector for TimeGAN -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Select Asset to
+                        Inspect/Download</label>
+                    <select id="timeganAssetSelector"
+                        class="w-full md:w-1/2 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                        <option value="">Choose an asset...</option>
+                        {% for asset in summary.timegan.assets %}
+                        <option value="{{ asset }}">{{ assets[asset].name if asset in assets else asset }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- TimeGAN Model Details -->
+                <div id="timeganDetails" class="hidden">
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border-2 border-blue-200">
+                        <h4 class="font-bold text-blue-900 mb-4 text-lg">Model Files</h4>
+                        <div class="space-y-3" id="timeganNetworks"></div>
+                        <div class="mt-4 pt-4 border-t-2 border-blue-200">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-blue-900">Total Size:</span>
+                                <span id="timeganTotalSize" class="text-xl font-bold text-blue-600"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diffusion Models Section -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-wave-square text-purple-600 mr-3"></i>Diffusion Models
+            </h3>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <p class="text-gray-700 mb-4">
+                    Each Diffusion model consists of <strong>2 files</strong>:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                    <div class="bg-purple-50 p-3 rounded-lg">
+                        <i class="fas fa-brain text-purple-600 mb-2"></i>
+                        <div class="text-sm font-semibold text-purple-900">Denoising Network (.h5)</div>
+                        <div class="text-xs text-purple-700">Transformer-based U-Net (~64 MB)</div>
+                    </div>
+                    <div class="bg-purple-50 p-3 rounded-lg">
+                        <i class="fas fa-cog text-purple-600 mb-2"></i>
+                        <div class="text-sm font-semibold text-purple-900">Scheduler Params (.pkl)</div>
+                        <div class="text-xs text-purple-700">Noise schedule (β, α values)</div>
+                    </div>
+                </div>
+
+                <!-- Asset Selector for Diffusion -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Select Asset to
+                        Inspect/Download</label>
+                    <select id="diffusionAssetSelector"
+                        class="w-full md:w-1/2 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                        <option value="">Choose an asset...</option>
+                        {% for asset in summary.diffusion.assets %}
+                        <option value="{{ asset }}">{{ assets[asset].name if asset in assets else asset }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Diffusion Model Details -->
+                <div id="diffusionDetails" class="hidden">
+                    <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-6 border-2 border-purple-200">
+                        <h4 class="font-bold text-purple-900 mb-4 text-lg">Model Files</h4>
+                        <div class="space-y-3" id="diffusionFiles"></div>
+
+                        <!-- Scheduler Parameters -->
+                        <div id="schedulerParams" class="mt-4 pt-4 border-t-2 border-purple-200">
+                            <h5 class="font-bold text-purple-900 mb-2">Scheduler Parameters</h5>
+                            <div class="bg-white p-3 rounded-lg">
+                                <div class="grid grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-gray-600">Timesteps:</span>
+                                        <span id="numTimesteps" class="font-bold text-purple-900 ml-2"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">β Start:</span>
+                                        <span id="betaStart" class="font-bold text-purple-900 ml-2"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">β End:</span>
+                                        <span id="betaEnd" class="font-bold text-purple-900 ml-2"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-4 border-t-2 border-purple-200">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-purple-900">Total Size:</span>
+                                <span id="diffusionTotalSize" class="text-xl font-bold text-purple-600"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Information -->
+        <div class="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-code text-cyan-600 mr-2"></i>How to Use These Models
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-bold text-gray-800 mb-2">Loading Models (Python)</h4>
+                    <pre class="bg-gray-800 text-green-400 p-4 rounded-lg text-xs overflow-x-auto"><code>import tensorflow as tf
+
+# Load TimeGAN networks
+embedder = tf.keras.models.load_model('embedder.h5')
+generator = tf.keras.models.load_model('generator.h5')
+recovery = tf.keras.models.load_model('recovery.h5')
+
+# Load Diffusion model
+denoising = tf.keras.models.load_model('denoising_network.h5')</code></pre>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-800 mb-2">Generate Synthetic Data</h4>
+                    <pre class="bg-gray-800 text-green-400 p-4 rounded-lg text-xs overflow-x-auto"><code>import numpy as np
+
+# Generate with TimeGAN
+noise = np.random.normal(0, 1, (1, 48, 128))
+latent = generator.predict(noise)
+synthetic = recovery.predict(latent)
+
+print(f"Generated shape: {synthetic.shape}")</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // TimeGAN Asset Selection
+    document.getElementById('timeganAssetSelector').addEventListener('change', async function () {
+        const assetCode = this.value;
+        const detailsDiv = document.getElementById('timeganDetails');
+
+        if (!assetCode) {
+            detailsDiv.classList.add('hidden');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/models/api/timegan/${assetCode}`);
+            const data = await response.json();
+
+            if (data.error) {
+                alert('Model not found');
+                return;
+            }
+
+            // Display networks
+            const networksDiv = document.getElementById('timeganNetworks');
+            networksDiv.innerHTML = '';
+
+            for (const [network, info] of Object.entries(data.networks)) {
+                const networkDiv = document.createElement('div');
+                networkDiv.className = 'bg-white p-3 rounded-lg flex justify-between items-center';
+                networkDiv.innerHTML = `
+                <div>
+                    <span class="font-semibold text-gray-800">${network}.h5</span>
+                    <span class="text-sm text-gray-600 ml-2">(${info.size_mb} MB)</span>
+                </div>
+                <a href="/models/download/timegan/${assetCode}/${network}" 
+                   class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                    <i class="fas fa-download mr-1"></i>Download
+                </a>
+            `;
+                networksDiv.appendChild(networkDiv);
+            }
+
+            document.getElementById('timeganTotalSize').textContent = data.total_size_mb + ' MB';
+            detailsDiv.classList.remove('hidden');
+            detailsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to load model info');
+        }
+    });
+
+    // Diffusion Asset Selection
+    document.getElementById('diffusionAssetSelector').addEventListener('change', async function () {
+        const assetCode = this.value;
+        const detailsDiv = document.getElementById('diffusionDetails');
+
+        if (!assetCode) {
+            detailsDiv.classList.add('hidden');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/models/api/diffusion/${assetCode}`);
+            const data = await response.json();
+
+            if (data.error) {
+                alert('Model not found');
+                return;
+            }
+
+            // Display files
+            const filesDiv = document.getElementById('diffusionFiles');
+            filesDiv.innerHTML = '';
+
+            // Denoising network
+            if (data.files.denoising_network) {
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'bg-white p-3 rounded-lg flex justify-between items-center';
+                fileDiv.innerHTML = `
+                <div>
+                    <span class="font-semibold text-gray-800">denoising_network.h5</span>
+                    <span class="text-sm text-gray-600 ml-2">(${data.files.denoising_network.size_mb} MB)</span>
+                </div>
+                <a href="/models/download/diffusion/${assetCode}/denoising" 
+                   class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm">
+                    <i class="fas fa-download mr-1"></i>Download
+                </a>
+            `;
+                filesDiv.appendChild(fileDiv);
+            }
+
+            // Scheduler params
+            if (data.files.scheduler_params) {
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'bg-white p-3 rounded-lg flex justify-between items-center';
+                fileDiv.innerHTML = `
+                <div>
+                    <span class="font-semibold text-gray-800">scheduler_params.pkl</span>
+                    <span class="text-sm text-gray-600 ml-2">(${data.files.scheduler_params.size_kb} KB)</span>
+                </div>
+                <a href="/models/download/diffusion/${assetCode}/scheduler" 
+                   class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm">
+                    <i class="fas fa-download mr-1"></i>Download
+                </a>
+            `;
+                filesDiv.appendChild(fileDiv);
+            }
+
+            // Display scheduler params
+            if (data.scheduler_params) {
+                document.getElementById('numTimesteps').textContent = data.scheduler_params.num_timesteps || 'N/A';
+                document.getElementById('betaStart').textContent = data.scheduler_params.beta_start || 'N/A';
+                document.getElementById('betaEnd').textContent = data.scheduler_params.beta_end || 'N/A';
+            }
+
+            document.getElementById('diffusionTotalSize').textContent = data.total_size_mb + ' MB';
+            detailsDiv.classList.remove('hidden');
+            detailsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to load model info');
+        }
+    });
+</script>
+{% endblock %}

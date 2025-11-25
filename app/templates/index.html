@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}Executive Summary - Financial Timeseries Generation{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Hero Section -->
+    <div class="text-center mb-12 fade-in">
+        <h1 class="text-5xl font-bold text-white mb-4">
+            Financial Timeseries Generation
+        </h1>
+        <p class="text-xl text-white opacity-90 mb-8">
+            Comparative Analysis: TimeGAN vs Diffusion Models
+        </p>
+        <div class="flex justify-center space-x-4">
+            <a href="/timegan" class="btn-primary">
+                <i class="fas fa-brain mr-2"></i>Explore TimeGAN
+            </a>
+            <a href="/diffusion" class="btn-primary">
+                <i class="fas fa-wave-square mr-2"></i>Explore Diffusion
+            </a>
+        </div>
+    </div>
+
+    <!-- Key Findings Cards -->
+    <div class="content-wrapper p-8 mb-8 fade-in">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6">
+            <i class="fas fa-key text-blue-600 mr-3"></i>Executive Summary
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Card 1 -->
+            <div class="metric-card card-hover">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-trophy text-green-600 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-600 text-sm font-semibold uppercase">Winner</h3>
+                        <p class="text-2xl font-bold text-gray-800">TimeGAN</p>
+                    </div>
+                </div>
+                <p class="text-gray-600">
+                    Superior performance with 48.4% better mean difference scores
+                </p>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="metric-card card-hover">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-chart-line text-blue-600 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-600 text-sm font-semibold uppercase">Assets Tested</h3>
+                        <p class="text-2xl font-bold text-gray-800">12 Assets</p>
+                    </div>
+                </div>
+                <p class="text-gray-600">
+                    Indices, stocks, and cryptocurrency (11 compared)
+                </p>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="metric-card card-hover">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-flask text-purple-600 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-600 text-sm font-semibold uppercase">Statistical Sig.</h3>
+                        <p class="text-2xl font-bold text-gray-800">p=0.0004</p>
+                    </div>
+                </div>
+                <p class="text-gray-600">
+                    Cohen's d = -2.21 (very large effect size)
+                </p>
+            </div>
+        </div>
+
+        <!-- Research Overview -->
+        <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-microscope text-blue-600 mr-2"></i>Research Overview
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-bold text-gray-800 mb-2">Objective</h4>
+                    <p class="text-gray-700 leading-relaxed">
+                        Comprehensive comparative analysis of TimeGAN and Diffusion models for financial
+                        timeseries generation across diverse asset classes including equities, indices,
+                        and cryptocurrencies. Evaluated on statistical fidelity metrics including KS statistics
+                        and mean difference across 12 assets.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-800 mb-2">Key Innovation</h4>
+                    <p class="text-gray-700 leading-relaxed">
+                        First systematic evaluation comparing temporal GANs with diffusion models on
+                        financial data, revealing TimeGAN's superior temporal consistency preservation
+                        through supervised step-ahead prediction loss. Statistical significance confirmed
+                        via paired t-tests and Wilcoxon signed-rank tests.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Comparison -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-balance-scale text-blue-600 mr-2"></i>Performance Comparison
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase">Metric</th>
+                            <th class="px-6 py-4 text-center text-sm font-bold text-blue-700 uppercase">TimeGAN</th>
+                            <th class="px-6 py-4 text-center text-sm font-bold text-purple-700 uppercase">Diffusion</th>
+                            <th class="px-6 py-4 text-center text-sm font-bold text-green-700 uppercase">Improvement
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-800">Mean Difference (Avg)</td>
+                            <td class="px-6 py-4 text-center text-blue-600 font-bold">0.0663 ± 0.0298</td>
+                            <td class="px-6 py-4 text-center text-purple-600 font-bold">0.1286 ± 0.0207</td>
+                            <td class="px-6 py-4 text-center text-green-600 font-bold">48.4%</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-800">KS Statistic (Avg)</td>
+                            <td class="px-6 py-4 text-center text-blue-600 font-bold">N/A</td>
+                            <td class="px-6 py-4 text-center text-purple-600 font-bold">0.3863 ± 0.0467</td>
+                            <td class="px-6 py-4 text-center text-gray-600 font-bold">-</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-800">Win Rate</td>
+                            <td class="px-6 py-4 text-center text-blue-600 font-bold">81.8% (9/11)</td>
+                            <td class="px-6 py-4 text-center text-purple-600 font-bold">0% (0/11)</td>
+                            <td class="px-6 py-4 text-center text-green-600 font-bold">+81.8%</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-800">Training Time (per asset)</td>
+                            <td class="px-6 py-4 text-center text-blue-600 font-bold">~18 minutes</td>
+                            <td class="px-6 py-4 text-center text-purple-600 font-bold">~45 minutes</td>
+                            <td class="px-6 py-4 text-center text-green-600 font-bold">2.5× faster</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-800">Model Parameters</td>
+                            <td class="px-6 py-4 text-center text-blue-600 font-bold">~460K</td>
+                            <td class="px-6 py-4 text-center text-purple-600 font-bold">~800K</td>
+                            <td class="px-6 py-4 text-center text-green-600 font-bold">1.7× smaller</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Category Performance -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-layer-group text-blue-600 mr-2"></i>Performance by Asset Category
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl">
+                    <h4 class="font-bold text-blue-900 mb-3">Indices (6 assets)</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-blue-800">TimeGAN Avg:</span>
+                            <span class="font-bold text-blue-900">0.0566 ± 0.0293</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-blue-800">Diffusion Avg:</span>
+                            <span class="font-bold text-blue-900">0.1292 ± 0.0223</span>
+                        </div>
+                        <div class="flex justify-between border-t-2 border-blue-300 pt-2 mt-2">
+                            <span class="text-blue-800 font-bold">Improvement:</span>
+                            <span class="font-bold text-green-600">56.2%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl">
+                    <h4 class="font-bold text-purple-900 mb-3">Stocks (5 assets)</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-purple-800">TimeGAN Avg:</span>
+                            <span class="font-bold text-purple-900">0.0759 ± 0.0297</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-purple-800">Diffusion Avg:</span>
+                            <span class="font-bold text-purple-900">0.1249 ± 0.0140</span>
+                        </div>
+                        <div class="flex justify-between border-t-2 border-purple-300 pt-2 mt-2">
+                            <span class="text-purple-800 font-bold">Improvement:</span>
+                            <span class="font-bold text-green-600">39.2%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Findings -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-green-50 border-l-4 border-green-500 p-6 rounded-lg">
+                <h4 class="font-bold text-green-800 mb-3 flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>TimeGAN Strengths
+                </h4>
+                <ul class="space-y-2 text-gray-700">
+                    <li class="flex items-start">
+                        <i class="fas fa-chevron-right text-green-600 mr-2 mt-1"></i>
+                        <span>Superior temporal consistency (supervised loss)</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-chevron-right text-green-600 mr-2 mt-1"></i>
+                        <span>Better mean difference: 0.0663 vs 0.1286</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-chevron-right text-green-600 mr-2 mt-1"></i>
+                        <span>Faster training (18 min vs 45 min)</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-chevron-right text-green-600 mr-2 mt-1"></i>
+                        <span>Smaller model (460K vs 800K params)</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-chevron-right text-green-600 mr-2 mt-1"></i>
+                        <span>Best performers: HSI (0.0256), AMZN (0.0206), FTSE (0.0344)</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg">
+                <h4 class="font-bold text-red-800 mb-3 flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i>Diffusion Limitations
+                </h4>
+                <ul class="space-y-2 text-gray-700">
+                    <li class="flex items-start">
+                        <i class="fas fa-chevron-right text-red-600 mr-2 mt-1"></i>
+                        <span>Weaker temporal dependency modeling</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-chevron-right text-red-600 mr-2 mt-1"></i>
+                        <span>Higher mean difference across all assets</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-chevron-right text-red-600 mr-2 mt-1"></i>
+                        <span>Longer training time (2.5× slower)</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-chevron-right text-red-600 mr-2 mt-1"></i>
+                        <span>Larger model size (1.7× more params)</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-chevron-right text-red-600 mr-2 mt-1"></i>
+                        <span>KS stats all in "Fair" range (0.3-0.5)</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="content-wrapper p-8 text-center fade-in">
+        <h3 class="text-2xl font-bold text-gray-800 mb-4">Explore Detailed Analysis</h3>
+        <p class="text-gray-600 mb-6">
+            Dive deep into model architectures, mathematical formulations, and asset-specific results
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+            <a href="/timegan"
+                class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                <i class="fas fa-brain mr-2"></i>TimeGAN Analysis
+            </a>
+            <a href="/diffusion"
+                class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                <i class="fas fa-wave-square mr-2"></i>Diffusion Analysis
+            </a>
+            <a href="/comparison"
+                class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                <i class="fas fa-balance-scale mr-2"></i>Side-by-Side Comparison
+            </a>
+            <a href="/technical"
+                class="inline-flex items-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                <i class="fas fa-code mr-2"></i>Technical Deep Dive
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

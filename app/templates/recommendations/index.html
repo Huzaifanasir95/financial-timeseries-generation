@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Recommendations - Financial Timeseries Generation{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="content-wrapper p-8 fade-in">
+        <div class="flex items-center mb-6">
+            <div class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl flex items-center justify-center mr-4">
+                <i class="fas fa-lightbulb text-white text-3xl"></i>
+            </div>
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800">Recommendations</h1>
+                <p class="text-gray-600 mt-1">Practical Guidance & Future Directions</p>
+            </div>
+        </div>
+
+        <!-- Primary Recommendation -->
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-500 rounded-xl p-8 mb-8">
+            <h2 class="text-3xl font-bold text-green-800 mb-4 flex items-center">
+                <i class="fas fa-star text-yellow-500 mr-3 text-4xl"></i>
+                Primary Recommendation: Use TimeGAN
+            </h2>
+            <p class="text-gray-700 text-lg leading-relaxed mb-4">
+                For financial timeseries generation tasks, <strong>TimeGAN significantly outperforms Diffusion models</strong> 
+                across all evaluation metrics. The supervised step-ahead prediction loss is critical for preserving 
+                temporal dependencies in financial data.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-green-600 font-bold text-2xl mb-1">48.2%</div>
+                    <div class="text-sm text-gray-600">Better KS Scores</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-green-600 font-bold text-2xl mb-1">73.4%</div>
+                    <div class="text-sm text-gray-600">Better Mean Matching</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-green-600 font-bold text-2xl mb-1">35% Faster</div>
+                    <div class="text-sm text-gray-600">Training Convergence</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Use Case Recommendations -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-tasks text-blue-600 mr-2"></i>Model Selection by Use Case
+            </h3>
+            
+            <div class="space-y-4">
+                <!-- TimeGAN Use Cases -->
+                <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+                    <h4 class="font-bold text-green-800 mb-3 text-xl flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>Choose TimeGAN for:
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-arrow-right text-green-600 mr-3 mt-1"></i>
+                            <div>
+                                <strong class="text-gray-800">Backtesting Trading Strategies</strong>
+                                <p class="text-sm text-gray-600">Temporal consistency crucial for realistic simulations</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-arrow-right text-green-600 mr-3 mt-1"></i>
+                            <div>
+                                <strong class="text-gray-800">Risk Management</strong>
+                                <p class="text-sm text-gray-600">Stress testing with realistic autocorrelated scenarios</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-arrow-right text-green-600 mr-3 mt-1"></i>
+                            <div>
+                                <strong class="text-gray-800">Portfolio Optimization</strong>
+                                <p class="text-sm text-gray-600">Accurate correlation structure between assets</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-arrow-right text-green-600 mr-3 mt-1"></i>
+                            <div>
+                                <strong class="text-gray-800">Data Augmentation</strong>
+                                <p class="text-sm text-gray-600">Expand training sets while preserving temporal patterns</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diffusion Limitations -->
+                <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500">
+                    <h4 class="font-bold text-red-800 mb-3 text-xl flex items-center">
+                        <i class="fas fa-times-circle mr-2"></i>Avoid Diffusion Models for:
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-arrow-right text-red-600 mr-3 mt-1"></i>
+                            <div>
+                                <strong class="text-gray-800">Sequential Prediction Tasks</strong>
+                                <p class="text-sm text-gray-600">Poor temporal dependency modeling</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-arrow-right text-red-600 mr-3 mt-1"></i>
+                            <div>
+                                <strong class="text-gray-800">High-Frequency Trading</strong>
+                                <p class="text-sm text-gray-600">Autocorrelation critical, poorly preserved</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-arrow-right text-red-600 mr-3 mt-1"></i>
+                            <div>
+                                <strong class="text-gray-800">Time-Series Forecasting</strong>
+                                <p class="text-sm text-gray-600">Lacks explicit temporal conditioning</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-arrow-right text-red-600 mr-3 mt-1"></i>
+                            <div>
+                                <strong class="text-gray-800">Real-Time Applications</strong>
+                                <p class="text-sm text-gray-600">1000 sampling steps too slow</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Future Research Directions -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-flask text-purple-600 mr-2"></i>Future Research Directions
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 shadow-md">
+                    <h4 class="font-bold text-blue-800 mb-3 flex items-center">
+                        <i class="fas fa-brain mr-2"></i>Hybrid Architectures
+                    </h4>
+                    <p class="text-gray-700 text-sm leading-relaxed">
+                        Combine TimeGAN's supervised temporal loss with Diffusion's iterative refinement. 
+                        Potential for best-of-both-worlds: temporal consistency + high sample quality.
+                    </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 shadow-md">
+                    <h4 class="font-bold text-green-800 mb-3 flex items-center">
+                        <i class="fas fa-code-branch mr-2"></i>Conditional Generation
+                    </h4>
+                    <p class="text-gray-700 text-sm leading-relaxed">
+                        Extend TimeGAN with macro-economic conditioning (interest rates, VIX) for scenario-based 
+                        generation. Critical for stress testing under specific market conditions.
+                    </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 shadow-md">
+                    <h4 class="font-bold text-purple-800 mb-3 flex items-center">
+                        <i class="fas fa-network-wired mr-2"></i>Multi-Asset Modeling
+                    </h4>
+                    <p class="text-gray-700 text-sm leading-relaxed">
+                        Joint generation of multiple correlated assets. Preserve cross-asset dependencies 
+                        for realistic portfolio simulations and systemic risk analysis.
+                    </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 shadow-md">
+                    <h4 class="font-bold text-amber-800 mb-3 flex items-center">
+                        <i class="fas fa-chart-line mr-2"></i>Regime-Aware Models
+                    </h4>
+                    <p class="text-gray-700 text-sm leading-relaxed">
+                        Detect and model different market regimes (bull, bear, high volatility). Generate 
+                        synthetic data that captures regime-switching dynamics.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Best Practices -->
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-list-check text-indigo-600 mr-2"></i>Implementation Best Practices
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="flex items-start">
+                    <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">1</div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">Proper Data Preprocessing</h4>
+                        <p class="text-sm text-gray-600">Use log returns (not raw prices). MinMax normalize to [0, 1]. Handle missing data carefully.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start">
+                    <div class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">2</div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">Hyperparameter Tuning</h4>
+                        <p class="text-sm text-gray-600">Adjust epochs based on asset volatility: 10K for stocks, 15K+ for crypto. Balance loss weights (λ, γ).</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start">
+                    <div class="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">3</div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">Comprehensive Evaluation</h4>
+                        <p class="text-sm text-gray-600">Don't rely on KS score alone. Check ACF plots, distribution moments, and statistical tests.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start">
+                    <div class="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">4</div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">Validation Strategy</h4>
+                        <p class="text-sm text-gray-600">Use held-out test set from different time periods. Verify generated data performs similarly in downstream tasks.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

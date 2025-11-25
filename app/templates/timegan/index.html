@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}TimeGAN Analysis - Financial Timeseries Generation{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="content-wrapper p-8 mb-8 fade-in">
+        <div class="flex items-center mb-6">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center mr-4">
+                <i class="fas fa-brain text-white text-3xl"></i>
+            </div>
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800">TimeGAN Analysis</h1>
+                <p class="text-gray-600 mt-1">Time-series Generative Adversarial Network Performance</p>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border-l-4 border-blue-600">
+                <div class="text-sm font-semibold text-blue-600 uppercase mb-2">Mean Difference</div>
+                <div class="text-3xl font-bold text-blue-900">0.0663</div>
+                <div class="text-xs text-blue-700 mt-1">± 0.0298 std</div>
+            </div>
+            <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border-l-4 border-green-600">
+                <div class="text-sm font-semibold text-green-600 uppercase mb-2">Assets Tested</div>
+                <div class="text-3xl font-bold text-green-900">11</div>
+                <div class="text-xs text-green-700 mt-1">Diverse asset classes</div>
+            </div>
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl border-l-4 border-purple-600">
+                <div class="text-sm font-semibold text-purple-600 uppercase mb-2">Avg Training</div>
+                <div class="text-3xl font-bold text-purple-900">18 min</div>
+                <div class="text-xs text-purple-700 mt-1">Per asset (20K iterations)</div>
+            </div>
+            <div class="bg-gradient-to-br from-amber-50 to-amber-100 p-6 rounded-xl border-l-4 border-amber-600">
+                <div class="text-sm font-semibold text-amber-600 uppercase mb-2">Total Parameters</div>
+                <div class="text-3xl font-bold text-amber-900">~460K</div>
+                <div class="text-xs text-amber-700 mt-1">5 networks combined</div>
+            </div>
+        </div>
+
+        <!-- Architecture Overview -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-sitemap text-blue-600 mr-3"></i>Architecture Overview
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <h4 class="font-bold text-blue-800 mb-2">Embedder</h4>
+                    <p class="text-gray-700 text-sm">4-layer GRU (128 hidden)</p>
+                    <p class="text-xs text-gray-500 mt-1">~100K params</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <h4 class="font-bold text-blue-800 mb-2">Recovery</h4>
+                    <p class="text-gray-700 text-sm">4-layer GRU (128 hidden)</p>
+                    <p class="text-xs text-gray-500 mt-1">~100K params</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <h4 class="font-bold text-blue-800 mb-2">Generator</h4>
+                    <p class="text-gray-700 text-sm">4-layer GRU (128 hidden)</p>
+                    <p class="text-xs text-gray-500 mt-1">~100K params</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <h4 class="font-bold text-blue-800 mb-2">Supervisor</h4>
+                    <p class="text-gray-700 text-sm">4-layer GRU (128 hidden)</p>
+                    <p class="text-xs text-gray-500 mt-1">~80K params</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <h4 class="font-bold text-blue-800 mb-2">Discriminator</h4>
+                    <p class="text-gray-700 text-sm">4-layer GRU (128 hidden)</p>
+                    <p class="text-xs text-gray-500 mt-1">~80K params</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loss Functions - Collapsible -->
+        <div class="mb-6">
+            <button onclick="toggleFormulas('timegan-loss')" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:from-indigo-600 hover:to-purple-700 transition flex items-center justify-between">
+                <span><i class="fas fa-function mr-3"></i>Show Loss Functions & Mathematical Formulation</span>
+                <i id="timegan-loss-icon" class="fas fa-chevron-down"></i>
+            </button>
+            <div id="timegan-loss-content" class="hidden mt-4 bg-white p-6 rounded-xl shadow-lg border-2 border-indigo-200">
+                <h4 class="text-xl font-bold text-gray-800 mb-4">TimeGAN Loss Functions</h4>
+                
+                <div class="space-y-6">
+                    <!-- Reconstruction Loss -->
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h5 class="font-bold text-blue-900 mb-2">1. Reconstruction Loss (L_R)</h5>
+                        <p class="text-gray-700 mb-3">Ensures meaningful embeddings by minimizing reconstruction error:</p>
+                        <div class="bg-white p-4 rounded border-l-4 border-blue-500 font-mono text-sm overflow-x-auto">
+                            L_R = E[||x - r(e(x))||²]
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">Where e() is embedder, r() is recovery network</p>
+                    </div>
+
+                    <!-- Supervised Loss -->
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h5 class="font-bold text-green-900 mb-2">2. Supervised Loss (L_S)</h5>
+                        <p class="text-gray-700 mb-3">Preserves temporal conditional distributions:</p>
+                        <div class="bg-white p-4 rounded border-l-4 border-green-500 font-mono text-sm overflow-x-auto">
+                            L_S = Σ ||h_t - g(e(x_{&lt;t}), z_t)||²
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">Stepwise prediction ensures temporal coherence</p>
+                    </div>
+
+                    <!-- Adversarial Loss -->
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <h5 class="font-bold text-purple-900 mb-2">3. Adversarial Loss (L_A)</h5>
+                        <p class="text-gray-700 mb-3">Matches joint distributions via minimax game:</p>
+                        <div class="bg-white p-4 rounded border-l-4 border-purple-500 font-mono text-sm overflow-x-auto">
+                            L_A = E[log d(e(x))] + E[log(1 - d(g(z)))]
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">Adversarial training in latent space</p>
+                    </div>
+
+                    <!-- Total Loss -->
+                    <div class="bg-gradient-to-r from-indigo-100 to-purple-100 p-4 rounded-lg border-2 border-indigo-400">
+                        <h5 class="font-bold text-indigo-900 mb-2 text-lg">Total Loss</h5>
+                        <div class="bg-white p-4 rounded border-l-4 border-indigo-600 font-mono text-sm overflow-x-auto">
+                            L_total = 10·L_R + 0.1·L_S + 1·L_A
+                        </div>
+                        <p class="text-sm text-gray-700 mt-2">Weighted combination of all three objectives</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Phases -->
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 mb-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-layer-group text-green-600 mr-3"></i>Three-Phase Training Strategy
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-blue-500">
+                    <div class="flex items-center mb-2">
+                        <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold mr-2">1</div>
+                        <h4 class="font-bold text-gray-800">Autoencoder Phase</h4>
+                    </div>
+                    <p class="text-sm text-gray-700">5,000 iterations</p>
+                    <p class="text-xs text-gray-600 mt-1">Train embedder + recovery only</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-green-500">
+                    <div class="flex items-center mb-2">
+                        <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold mr-2">2</div>
+                        <h4 class="font-bold text-gray-800">Supervisor Phase</h4>
+                    </div>
+                    <p class="text-sm text-gray-700">5,000 iterations</p>
+                    <p class="text-xs text-gray-600 mt-1">Train generator with supervised loss</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-purple-500">
+                    <div class="flex items-center mb-2">
+                        <div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold mr-2">3</div>
+                        <h4 class="font-bold text-gray-800">Joint GAN Phase</h4>
+                    </div>
+                    <p class="text-sm text-gray-700">10,000 iterations</p>
+                    <p class="text-xs text-gray-600 mt-1">Adversarial training all networks</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Asset Selector -->
+        <div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-chart-line text-blue-600 mr-3"></i>Asset-Specific Results
+            </h3>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Select Asset</label>
+                <select id="assetSelector" class="w-full md:w-1/2 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                    <option value="">Choose an asset...</option>
+                    {% for code, info in assets.items() %}
+                        {% if code != 'BTC-USD' %}
+                        <option value="{{ code }}">{{ info.name }} ({{ code }}) - {{ info.type }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Asset Details (populated by JS) -->
+            <div id="assetDetails" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-600">
+                        <h4 class="text-lg font-bold text-gray-800 mb-4">Training Configuration</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600 font-medium">Iterations:</span>
+                                <span id="iterations" class="font-bold text-gray-800"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600 font-medium">Batch Size:</span>
+                                <span id="batchSize" class="font-bold text-gray-800"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600 font-medium">Hidden Dimension:</span>
+                                <span id="hiddenDim" class="font-bold text-gray-800"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600 font-medium">Training Time:</span>
+                                <span id="trainingTime" class="font-bold text-gray-800"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-600">
+                        <h4 class="text-lg font-bold text-gray-800 mb-4">Performance Metrics</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600 font-medium">Mean Difference:</span>
+                                <span id="meanDiff" class="font-bold text-green-600 text-xl"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600 font-medium">Quality Rating:</span>
+                                <span id="quality" class="font-bold text-gray-800"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparison Image -->
+                <div id="comparisonImage" class="mb-6">
+                    <h4 class="text-lg font-bold text-gray-800 mb-3">Real vs Synthetic Comparison</h4>
+                    <div class="bg-white p-4 rounded-xl shadow-md">
+                        <img id="assetImage" src="" alt="TimeGAN Comparison" class="w-full rounded-lg">
+                    </div>
+                </div>
+
+                <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+                    <p class="text-sm text-gray-700">
+                        <strong class="text-blue-800">Note:</strong> 
+                        <span id="notes"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleFormulas(id) {
+    const content = document.getElementById(id + '-content');
+    const icon = document.getElementById(id + '-icon');
+    
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+    } else {
+        content.classList.add('hidden');
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    }
+}
+
+document.getElementById('assetSelector').addEventListener('change', async function() {
+    const assetCode = this.value;
+    const detailsDiv = document.getElementById('assetDetails');
+    
+    if (!assetCode) {
+        detailsDiv.classList.add('hidden');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/timegan/api/asset/${assetCode}`);
+        const data = await response.json();
+        
+        if (data.error) {
+            alert('Asset not found');
+            return;
+        }
+        
+        // Populate fields
+        document.getElementById('iterations').textContent = data.results.training_iterations.toLocaleString();
+        document.getElementById('batchSize').textContent = data.results.batch_size;
+        document.getElementById('hiddenDim').textContent = data.results.hidden_dim;
+        document.getElementById('trainingTime').textContent = data.results.training_time_minutes + ' minutes';
+        document.getElementById('meanDiff').textContent = data.results.mean_diff.toFixed(4);
+        document.getElementById('quality').textContent = data.results.quality;
+        document.getElementById('notes').textContent = data.results.notes;
+        
+        // Set image
+        const imagePath = `/static/images/07_timegan_comparison_${assetCode}.png`;
+        document.getElementById('assetImage').src = imagePath;
+        
+        detailsDiv.classList.remove('hidden');
+        detailsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch (error) {
+        console.error('Error fetching asset data:', error);
+        alert('Failed to load asset data');
+    }
+});
+</script>
+{% endblock %}
