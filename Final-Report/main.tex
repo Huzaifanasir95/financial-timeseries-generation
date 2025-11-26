@@ -26,7 +26,7 @@ National University of Computer and Emerging Sciences\\
 \maketitle
 %
 \begin{abstract}
-Financial time-series data exhibits unique characteristics such as volatility clustering, fat-tailed distributions, and non-stationarity, making synthetic data generation challenging. This paper presents a comprehensive comparative study of TimeGAN (Time-series Generative Adversarial Network) and Diffusion Models for generating synthetic financial data across 12 diverse assets including stock indices, individual stocks, and cryptocurrency. We evaluate both models on statistical fidelity metrics including mean difference and Kolmogorov-Smirnov statistics across multiple financial features. Our experimental results demonstrate that TimeGAN achieves significantly better performance in preserving feature distributions (mean difference: 0.060 ± 0.019) compared to Diffusion Models (0.130 ± 0.025), with a statistically significant improvement (p=0.0004, Cohen's d=-2.21). However, Diffusion Models provide unique advantages through distribution matching validation via KS statistics (average: 0.388). We analyze performance across asset categories and provide recommendations for practical deployment in financial applications.
+Financial time-series data exhibits unique characteristics such as volatility clustering, fat-tailed distributions, and non-stationarity, making synthetic data generation challenging. This paper presents a comprehensive comparative study of TimeGAN (Time-series Generative Adversarial Network) and Diffusion Models for generating synthetic financial data. We implemented a Diffusion Model and compared its performance against pre-existing TimeGAN evaluation results across 11 comparable assets (from 12 total evaluated assets) including stock indices, individual stocks, and cryptocurrency. We evaluate both models on statistical fidelity metrics including mean difference and Kolmogorov-Smirnov statistics across multiple financial features. Our experimental results demonstrate that TimeGAN achieves significantly better performance in preserving feature distributions (mean difference: 0.067 ± 0.033) compared to Diffusion Models (0.127 ± 0.019), with a statistically significant improvement (p=0.0004, Cohen's d=-2.21). However, Diffusion Models provide unique advantages through distribution matching validation via KS statistics (average: 0.385). We analyze performance across asset categories and provide recommendations for practical deployment in financial applications.
 
 \keywords{Financial Time-Series \and Generative Adversarial Networks \and Diffusion Models \and TimeGAN \and Synthetic Data Generation}
 \end{abstract}
@@ -85,13 +85,16 @@ This paper addresses the gap in comparative empirical analysis by conducting a c
 \item \textbf{Technology Stocks (5)}: Apple (AAPL), Alphabet (GOOGL), Amazon (AMZN), Microsoft (MSFT), Tesla (TSLA)
 \item \textbf{Cryptocurrency (1)}: Bitcoin (BTC-USD)
 \end{itemize}
+
+Note: We initially collected data for 26 diverse assets from Yahoo Finance. From these, 12 assets were selected for model evaluation based on data quality and liquidity. For direct comparison, 11 assets have valid TimeGAN and Diffusion results (BTC-USD lacks TimeGAN evaluation due to convergence issues with extreme cryptocurrency volatility).
+
 This diversity enables analysis across different volatility regimes, market capitalizations, and asset characteristics.
 
-\item \textbf{Multi-Feature Analysis}: Unlike many studies focusing on single price series, we evaluate synthetic data generation across six critical financial features:
+\item \textbf{Multi-Feature Analysis}: We evaluate synthetic data generation across comprehensive financial features:
 \begin{itemize}
-\item Price features: Close, High, Low, Open
-\item Trading volume: Volume
-\item Derived features: Daily returns
+\item \textbf{Basic features (6)}: Close, High, Low, Open prices, Volume, and Daily returns
+\item \textbf{Extended features for Diffusion Model (108 total)}: Including technical indicators (RSI, MACD, Bollinger Bands, ADX, etc.), momentum indicators, volatility measures, and lagged features
+\item \textbf{TimeGAN evaluation features (11 selected)}: Returns, Log Returns, Volume Change, MACD, MACD Signal, SMA 20, EMA 20, ADX, Bollinger Band Width, and lagged returns
 \end{itemize}
 This comprehensive feature set captures different aspects of market behavior and tests model capabilities in preserving multivariate relationships.
 
@@ -377,9 +380,11 @@ Cryptocurrency & 1 & 0.0456 & 28.3B & 2,500 \\
 
 \subsection{TimeGAN Architecture and Training}
 
+\textit{Note: This section describes the TimeGAN architecture as presented in the original paper \cite{yoon2019time}. For this comparative study, we utilize pre-existing TimeGAN evaluation results rather than a custom implementation. The Diffusion Model, described in the following section, was implemented as part of this work.}
+
 \subsubsection{Architectural Components}
 
-TimeGAN consists of four interconnected neural networks, all implemented using Gated Recurrent Units (GRUs):
+The TimeGAN architecture consists of four interconnected neural networks, typically implemented using Gated Recurrent Units (GRUs):
 
 \textbf{1. Embedding Network ($\mathbf{e}: \mathcal{X} \rightarrow \mathcal{H}$)}:
 \begin{itemize}
@@ -485,6 +490,8 @@ where $\lambda_R = 10$, $\lambda_S = 0.1$, $\lambda_A = 1$ (weights from origina
 \end{itemize}
 
 \subsection{Diffusion Model Architecture and Training}
+
+\textit{Note: This section describes our custom implementation of the Diffusion Model developed specifically for this comparative study.}
 
 \subsubsection{Theoretical Foundation}
 
@@ -912,10 +919,10 @@ Figure \ref{fig:comparison_overview} presents our primary comparative visualizat
 
 \textbf{Panel Analysis}:
 \begin{itemize}
-\item \textbf{Panel (a)}: Side-by-side comparison shows TimeGAN (blue) consistently below Diffusion (red) for all assets
+\item \textbf{Panel (a)}: Side-by-side comparison shows TimeGAN (blue) consistently below Diffusion (red) for most assets
 \item \textbf{Panel (b)}: Diffusion KS statistics all fall in Fair quality range (0.3-0.5), none achieving Good quality
-\item \textbf{Panel (c)}: All bars positive (red), indicating TimeGAN outperforms on every single asset
-\item \textbf{Panel (d)}: All points above diagonal confirm systematic TimeGAN advantage
+\item \textbf{Panel (c)}: Nearly all bars positive (red), indicating TimeGAN outperforms on 9 of 11 assets, with 2 near-zero bars representing ties (GSPC, GOOGL)
+\item \textbf{Panel (d)}: Most points above diagonal confirm systematic TimeGAN advantage, with 2 points very close to the diagonal (ties)
 \end{itemize}
 
 Table \ref{tab:overall_stats} quantifies overall performance:
@@ -928,11 +935,11 @@ Table \ref{tab:overall_stats} quantifies overall performance:
 \toprule
 \textbf{Metric} & \textbf{TimeGAN} & \textbf{Diffusion} & \textbf{p-value} \\
 \midrule
-Mean Difference & $0.060 \pm 0.019$ & $0.130 \pm 0.025$ & 0.0004*** \\
-Relative Improvement & -- & -117\% & -- \\
-KS Statistic & N/A & $0.388 \pm 0.046$ & -- \\
-Winner Count & 11/11 (100\%) & 0/11 (0\%) & -- \\
-Median Difference & 0.058 & 0.128 & -- \\
+Mean Difference & $0.067 \pm 0.033$ & $0.127 \pm 0.019$ & 0.0004*** \\
+Relative Improvement & -- & -89\% & -- \\
+KS Statistic & N/A & $0.385 \pm 0.042$ & -- \\
+Winner Count & 9/11 (82\%), 2 Ties (18\%) & 0/11 (0\%) & -- \\
+Median Difference & 0.064 & 0.123 & -- \\
 \bottomrule
 \multicolumn{4}{l}{\small *** p $<$ 0.001, highly significant}
 \end{tabular}
@@ -940,11 +947,11 @@ Median Difference & 0.058 & 0.128 & -- \\
 
 \textbf{Key Findings}:
 \begin{enumerate}
-\item \textbf{Magnitude}: TimeGAN achieves 54\% lower mean differences (0.060 vs 0.130)
-\item \textbf{Consistency}: TimeGAN wins on all 11 compared assets (100\% win rate)
+\item \textbf{Magnitude}: TimeGAN achieves 47\% lower mean differences (0.067 vs 0.127)
+\item \textbf{Consistency}: TimeGAN wins on 9 of 11 compared assets (82\% win rate), with 2 ties (18\%) where differences were negligible ($<$0.02)
 \item \textbf{Statistical Significance}: p=0.0004 provides strong evidence of real difference
-\item \textbf{Variability}: TimeGAN shows lower standard deviation (0.019 vs 0.025), indicating more consistent performance
-\item \textbf{Distribution Matching}: Diffusion's average KS of 0.388 indicates Fair quality but not excellent
+\item \textbf{Variability}: Diffusion shows lower standard deviation (0.019 vs 0.033), indicating more consistent performance across assets
+\item \textbf{Distribution Matching}: Diffusion's average KS of 0.385 indicates Fair quality but not excellent
 \end{enumerate}
 
 \subsubsection{Detailed Asset-by-Asset Breakdown}
@@ -1369,7 +1376,7 @@ We employ multiple statistical tests to rigorously validate performance differen
 \item Test statistic: $t = -5.225$
 \item Degrees of freedom: $df = 10$
 \item p-value: $p = 0.0004$
-\item Critical value (α=0.05): $t_{crit} = \pm 2.228$
+\item Critical value ($\alpha$=0.05): $t_{crit} = \pm 2.228$
 \item Decision: Reject $H_0$ ($|t| > t_{crit}$ and $p < 0.05$)
 \end{itemize}
 
@@ -1403,7 +1410,7 @@ We employ multiple statistical tests to rigorously validate performance differen
 \begin{itemize}
 \item Test statistic: $W = 0.000$
 \item p-value: $p = 0.0010$
-\item Decision: Reject $H_0$ at α=0.05 level
+\item Decision: Reject $H_0$ at $\alpha$=0.05 level
 \end{itemize}
 
 \textit{Interpretation}: Non-parametric test confirms parametric findings, strengthening conclusion that TimeGAN superiority is genuine and not dependent on distributional assumptions.
@@ -1482,7 +1489,7 @@ While our Diffusion implementation uses Transformers with self-attention, the pa
 \subsubsection{Training Dynamics}
 
 \textbf{Convergence and Stability}:
-Despite GANs' notorious training instability, our TimeGAN implementation achieved stable convergence across all assets (except BTC-USD). This stability likely results from:
+Despite GANs' notorious training instability, the TimeGAN evaluations show stable convergence across all assets (except BTC-USD). This stability likely results from:
 \begin{itemize}\item Phased training: Separate embedding pre-training before adversarial phase\item Latent space adversarial training: Easier than data space discrimination\item Balanced loss weighting: Prevents any single objective from dominating\item GRU architecture: More stable than vanilla RNN or deep networks\end{itemize}
 
 Conversely, diffusion models exhibited very stable training (as expected) but converged to suboptimal solutions in terms of mean preservation. This suggests:
@@ -1868,9 +1875,11 @@ This work opens numerous promising avenues for future investigation:
 
 \subsection{Closing Remarks}
 
-Synthetic financial data generation represents a critical capability for modern financial institutions facing challenges of data scarcity, privacy requirements, and regulatory stress testing demands. Our comprehensive evaluation demonstrates that TimeGAN currently offers superior statistical fidelity for traditional financial assets, while Diffusion Models provide complementary advantages in stability and validation.
+Synthetic financial data generation represents a critical capability for modern financial institutions facing challenges of data scarcity, privacy requirements, and regulatory stress testing demands. Our comprehensive evaluation demonstrates that TimeGAN offers superior statistical fidelity for traditional financial assets (47\% lower mean differences, p=0.0004, very large effect size Cohen's d=-2.21), while Diffusion Models provide complementary advantages in stability and validation.
 
-The significant performance differences we observed (54\\% improvement, p=0.0004, very large effect size) provide strong evidence for TimeGAN's effectiveness, while acknowledging important limitations including cryptocurrency handling and computational requirements. Our category-based analysis showing consistent performance across indices and stocks suggests these findings generalize within tested asset classes.
+The significant performance differences we observed provide strong evidence for TimeGAN's effectiveness on 9 of 11 comparable assets (82\% win rate), with 2 ties (18\%) where differences were negligible. Our category-based analysis showing consistent performance across indices and stocks suggests these findings generalize within tested asset classes.
+
+\textbf{Implementation Note}: This study implemented a custom Diffusion Model and compared it against pre-existing TimeGAN evaluation results. The performance gap observed may reflect differences in implementation details, hyperparameter optimization, and feature engineering strategies between the two approaches.
 
 Looking forward, the field would benefit from hybrid approaches combining TimeGAN's temporal modeling with Diffusion's theoretical guarantees, extended evaluation on downstream tasks, and application to diverse asset classes and market conditions. As generative AI continues advancing rapidly, we anticipate increasingly sophisticated models that may further improve on both approaches evaluated here.
 
