@@ -151,7 +151,7 @@ The advent of deep learning introduced powerful non-linear modeling capabilities
 
 \textbf{Recurrent Neural Networks}: LSTM networks \cite{hochreiter1997long} address the vanishing gradient problem in standard RNNs through gating mechanisms (input, forget, output gates) that control information flow. LSTMs have demonstrated success in financial forecasting by capturing long-range dependencies and non-linear patterns. However, they require substantial data and computational resources, and their black-box nature limits interpretability.
 
-\textbf{Attention-Based Models}: Transformer architectures, originally developed for natural language processing, have been adapted for time-series through positional encoding and temporal attention mechanisms. Self-attention enables modeling of dependencies across arbitrary time lags without the sequential bottleneck of RNNs.
+\textbf{Attention-Based Models}: Transformer architectures \cite{vaswani2017attention}, originally developed for natural language processing, have been adapted for time-series through positional encoding and temporal attention mechanisms \cite{lim2021temporal,zhou2021informer}. Self-attention enables modeling of dependencies across arbitrary time lags without the sequential bottleneck of RNNs.
 
 \textbf{Foundation Models}: Recent work on foundation models for time-series includes:
 \begin{itemize}
@@ -171,7 +171,7 @@ Generative Adversarial Networks \cite{goodfellow2014generative} revolutionized g
 \item \textbf{Embedding Space}: Unlike vanilla GANs operating in data space, TimeGAN introduces learned latent representations, reducing dimensionality and easing adversarial training
 \item \textbf{Supervised Loss}: A stepwise supervised loss preserves temporal conditional distributions $p(x_t|x_{t-1})$
 \item \textbf{Joint Training}: Combines reconstruction, supervised, and adversarial objectives for comprehensive temporal modeling
-\item \textbf{Architecture}: Uses GRU (Gated Recurrent Units) for all components, enabling efficient sequential processing
+\item \textbf{Architecture}: Uses GRU (Gated Recurrent Units) \cite{chung2014empirical} for all components, enabling efficient sequential processing
 \end{itemize}
 TimeGAN has been successfully applied to stock prices, energy consumption, and medical time-series.
 
@@ -184,7 +184,7 @@ TimeGAN has been successfully applied to stock prices, energy consumption, and m
 \item Financial-specific evaluation metrics (volatility, autocorrelation preservation)
 \end{itemize}
 
-\textbf{Challenges}: GAN-based approaches face:
+\textbf{Challenges}: GAN-based approaches face \cite{salimans2016improved,arjovsky2017wasserstein}:
 \begin{itemize}
 \item Training instability and mode collapse
 \item Difficulty in hyperparameter tuning
@@ -218,7 +218,7 @@ Diffusion models represent a fundamentally different generative paradigm based o
 \item Score-based formulation for stable training
 \end{itemize}
 
-\textbf{Advantages}: Diffusion models offer:
+\textbf{Advantages}: Diffusion models offer \cite{dhariwal2021diffusion,song2020score}:
 \begin{itemize}
 \item Stable training without adversarial dynamics
 \item Mode coverage guarantees from theoretical foundations
@@ -597,7 +597,7 @@ This simplified loss (ignoring weighting factors) empirically performs better th
 
 \textbf{Hyperparameters}:
 \begin{itemize}
-\item Optimizer: AdamW with $\beta_1=0.9$, $\beta_2=0.999$, weight decay = 0.01
+\item Optimizer: AdamW \cite{loshchilov2017decoupled} with $\beta_1=0.9$, $\beta_2=0.999$, weight decay = 0.01
 \item Learning rate: $10^{-4}$ with cosine annealing schedule
 \item Batch size: 32 (smaller due to Transformer memory requirements)
 \item Training epochs: 50 per asset
@@ -642,7 +642,7 @@ Similarly, we measure volatility preservation:
 \text{Std\_Diff}_f = |\sigma_{\text{real}}(f) - \sigma_{\text{synthetic}}(f)|
 \end{equation}
 
-\textbf{Kolmogorov-Smirnov (KS) Statistic}:
+\textbf{Kolmogorov-Smirnov (KS) Statistic} \cite{massey1951kolmogorov}:
 Measures maximum deviation between empirical cumulative distribution functions:
 \begin{equation}
 D_{KS}(f) = \sup_x |F_{\text{real}}(x) - F_{\text{synthetic}}(x)|
@@ -671,7 +671,7 @@ Null hypothesis: $H_0: \mu_{\text{TimeGAN}} = \mu_{\text{Diffusion}}$
 
 Significance level: $\alpha = 0.05$ (two-tailed test)
 
-\textbf{Cohen's d Effect Size}:
+\textbf{Cohen's d Effect Size} \cite{cohen1988statistical}:
 Quantifies practical significance independent of sample size:
 \begin{equation}
 d = \frac{\bar{x}_1 - \bar{x}_2}{s_{\text{pooled}}}
@@ -689,7 +689,7 @@ Interpretation:
 \item $|d| \geq 0.8$: Very large effect
 \end{itemize}
 
-\textbf{Wilcoxon Signed-Rank Test}:
+\textbf{Wilcoxon Signed-Rank Test} \cite{wilcoxon1945individual}:
 Non-parametric alternative robust to outliers and non-normal distributions:
 \begin{equation}
 W = \sum_{i=1}^n [\text{sgn}(x_{2,i} - x_{1,i}) \cdot R_i]
@@ -698,13 +698,13 @@ where $R_i$ is the rank of $|x_{2,i} - x_{1,i}|$.
 
 \subsubsection{Financial Stylized Facts}
 
-We also evaluate preservation of financial stylized facts \cite{cont2001empirical}:
+We also evaluate preservation of financial stylized facts \cite{cont2001empirical,tsay2005analysis}:
 
 \begin{itemize}
-\item \textbf{Volatility Clustering}: Autocorrelation of squared returns
-\item \textbf{Fat Tails}: Kurtosis of return distributions (excess kurtosis $> 3$)
-\item \textbf{Leverage Effect}: Negative correlation between returns and volatility changes
-\item \textbf{Volume-Price Relationship}: Correlation between trading volume and price changes
+\item \textbf{Volatility Clustering}: Autocorrelation of squared returns \cite{mandelbrot1963variation}
+\item \textbf{Fat Tails}: Kurtosis of return distributions (excess kurtosis $> 3$) \cite{fama1965behavior}
+\item \textbf{Leverage Effect}: Negative correlation between returns and volatility changes \cite{black1976studies}
+\item \textbf{Volume-Price Relationship}: Correlation between trading volume and price changes \cite{campbell1997econometrics}
 \end{itemize}
 
 \subsection{Experimental Setup}
@@ -1489,15 +1489,15 @@ While our Diffusion implementation uses Transformers with self-attention, the pa
 \subsubsection{Training Dynamics}
 
 \textbf{Convergence and Stability}:
-Despite GANs' notorious training instability, the TimeGAN evaluations show stable convergence across all assets (except BTC-USD). This stability likely results from:
+Despite GANs' notorious training instability \cite{salimans2016improved,gulrajani2017improved}, the TimeGAN evaluations show stable convergence across all assets (except BTC-USD). This stability likely results from:
 \begin{itemize}\item Phased training: Separate embedding pre-training before adversarial phase\item Latent space adversarial training: Easier than data space discrimination\item Balanced loss weighting: Prevents any single objective from dominating\item GRU architecture: More stable than vanilla RNN or deep networks\end{itemize}
 
-Conversely, diffusion models exhibited very stable training (as expected) but converged to suboptimal solutions in terms of mean preservation. This suggests:
+Conversely, diffusion models exhibited very stable training (as expected) \cite{ho2020denoising,nichol2021improved} but converged to suboptimal solutions in terms of mean preservation. This suggests:
 \begin{itemize}
 \item Stability alone insufficient for performance\item Training objective may not align perfectly with evaluation metrics\item Possible systematic bias in learned denoising process\end{itemize}
 
 \textbf{Optimization Landscape}:
-TimeGAN's adversarial objective creates a minimax game that, when balanced, forces the generator to match real data distribution closely. The discriminator provides adaptive feedback, continuously raising the bar. In contrast, diffusion models optimize a fixed objective (noise prediction MSE) that may not directly correspond to distribution matching quality.
+TimeGAN's adversarial objective creates a minimax game \cite{goodfellow2014generative,arjovsky2017wasserstein} that, when balanced, forces the generator to match real data distribution closely. The discriminator provides adaptive feedback, continuously raising the bar. In contrast, diffusion models optimize a fixed objective (noise prediction MSE) that may not directly correspond to distribution matching quality.
 
 \subsubsection{Data Characteristics and Model Fit}
 
@@ -1740,7 +1740,7 @@ This work opens numerous promising avenues for future investigation:
 
 \subsubsection{Hybrid Architecture Development}
 
-\textbf{TimeGAN-Diffusion Hybrid}:
+\textbf{TimeGAN-Diffusion Hybrid} \cite{brophy2023generative}:
 \begin{itemize}
 \item Combine TimeGAN's temporal modeling with Diffusion's stable training
 \item Use Diffusion reverse process in TimeGAN's latent space
@@ -1750,7 +1750,7 @@ This work opens numerous promising avenues for future investigation:
 
 \textbf{Architecture Innovations}:
 \begin{itemize}
-\item Transformer-based GANs for longer sequence generation
+\item Transformer-based GANs for longer sequence generation \cite{vaswani2017attention,zhou2021informer}
 \item Conditional diffusion models with financial regime awareness
 \item Attention mechanisms in TimeGAN for long-range dependencies
 \item Memory-augmented networks for capturing market microstructure
@@ -1822,10 +1822,10 @@ This work opens numerous promising avenues for future investigation:
 
 \textbf{Financial Stylized Facts}:
 \begin{itemize}
-\item Comprehensive testing of all Cont (2001) stylized facts
+\item Comprehensive testing of all Cont (2001) \cite{cont2001empirical} stylized facts
 \item Volatility clustering preservation metrics
 \item Leverage effect quantification
-\item Long memory in volatility analysis
+\item Long memory in volatility analysis \cite{ding1993long}
 \item Multifractal properties evaluation
 \end{itemize}
 
@@ -1859,9 +1859,9 @@ This work opens numerous promising avenues for future investigation:
 
 \textbf{Acceleration Techniques}:
 \begin{itemize}
-\item Knowledge distillation for faster diffusion sampling
+\item Knowledge distillation \cite{hinton2015distilling} for faster diffusion sampling
 \item Pruning and quantization for deployment
-\item Efficient sampling algorithms (DDIM, DPM-Solver)
+\item Efficient sampling algorithms (DDIM \cite{song2020denoising}, DPM-Solver \cite{lu2022dpm})
 \item Hardware optimization (TensorRT, ONNX)
 \end{itemize}
 
