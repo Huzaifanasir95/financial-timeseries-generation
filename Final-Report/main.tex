@@ -784,9 +784,9 @@ Statistical properties (Table \ref{tab:return_stats}):
 \toprule
 \textbf{Asset Type} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Skewness} & \textbf{Kurtosis} & \textbf{Jarque-Bera} \\
 \midrule
-Indices & 0.0004 & 0.0112 & -0.52 & 8.4 & $>$1000*** \\
-Stocks & 0.0009 & 0.0198 & -0.31 & 6.8 & $>$800*** \\
-Crypto (BTC) & 0.0021 & 0.0421 & 0.08 & 12.3 & $>$5000*** \\
+Indices & 0.0004 & 0.0120 & -0.39 & 11.3 & $>$1000*** \\
+Stocks & 0.0013 & 0.0219 & 0.20 & 6.1 & $>$800*** \\
+Crypto (BTC) & 0.0022 & 0.0363 & -0.13 & 7.7 & $>$5000*** \\
 \bottomrule
 \multicolumn{6}{l}{\small *** indicates rejection of normality at p $<$ 0.001}
 \end{tabular}
@@ -795,7 +795,7 @@ Crypto (BTC) & 0.0021 & 0.0421 & 0.08 & 12.3 & $>$5000*** \\
 All assets exhibit:
 \begin{itemize}
 \item \textbf{Excess Kurtosis}: Fat tails (kurtosis $>$ 3), confirming extreme events more common than normal distribution
-\item \textbf{Negative Skewness} (except Bitcoin): Asymmetry toward negative returns (larger losses than gains)
+\item \textbf{Mixed Skewness}: Indices show negative skewness (asymmetry toward larger losses), while stocks exhibit slight positive skewness, and Bitcoin shows negative skewness
 \item \textbf{Non-Normality}: Jarque-Bera test strongly rejects normality for all assets
 \end{itemize}
 
@@ -1316,14 +1316,17 @@ Before comparing generative models, we establish baseline forecasting performanc
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{images/06_baseline_all_assets_comparison.png}
-\caption{Comprehensive baseline comparison across all 12 assets showing MAPE and MAE metrics for traditional forecasting approaches (ARIMA, LSTM, Prophet). Provides context for understanding synthetic data generation quality requirements.}
+\caption{Comprehensive baseline comparison across 7 representative assets (GSPC, IXIC, AAPL, TSLA, BTC-USD, ETH-USD, GC=F) showing MAPE and MAE metrics for traditional forecasting approaches (ARIMA, LSTM, Prophet). Provides context for understanding synthetic data generation quality requirements.}
 \label{fig:baseline_all}
-\end{figure}
+\end{figure>
 
 These baseline results demonstrate:\begin{itemize}
-\item Traditional forecasting varies significantly across assets (MAPE: 2-8\%)
-\item Deep learning (LSTM) generally outperforms statistical methods (ARIMA)
-\item Prophet shows competitive performance with automatic seasonality detection
+\item Five baseline models tested: Naive Last Value, Naive Mean, ARIMA, LSTM, and Prophet
+\item Tested on 7 representative assets spanning indices (GSPC, IXIC), stocks (AAPL, TSLA), crypto (BTC-USD, ETH-USD), and commodities (GC=F)
+\item Traditional forecasting varies significantly across assets (MAPE range: 100-195\%)
+\item Deep learning (LSTM) shows comparable performance to statistical methods (ARIMA)
+\item Prophet demonstrates automatic seasonality detection but higher variance
+\item Directional accuracy hovers around 50\%, confirming market efficiency hypothesis
 \item Synthetic data must preserve statistical properties to maintain forecasting utility
 \end{itemize}
 
