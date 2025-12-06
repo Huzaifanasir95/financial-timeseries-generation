@@ -130,6 +130,8 @@ GANs \cite{goodfellow2014generative} use adversarial training between generator 
 
 \textbf{Challenges} \cite{salimans2016improved,arjovsky2017wasserstein}: Training instability, mode collapse, hyperparameter sensitivity, and limited theoretical guarantees.
 
+\textbf{Recent GAN Advances}: Karras et al. \cite{karras2019style} introduced StyleGAN with style-based generation enabling fine-grained control. Mirza and Osindero \cite{mirza2014conditional} developed conditional GANs allowing class-conditional generation. These architectural innovations improve stability and controllability but have limited application to financial time-series.
+
 \subsubsection{Diffusion Models}
 
 \textbf{Theoretical Foundation}: Sohl-Dickstein et al. \cite{sohl2015deep} introduced diffusion models based on iterative denoising. Ho et al. \cite{ho2020denoising} simplified DDPM formulation with forward noise injection and reverse denoising processes.
@@ -141,6 +143,16 @@ GANs \cite{goodfellow2014generative} use adversarial training between generator 
 \textbf{Advantages} \cite{dhariwal2021diffusion,song2020score}: Stable training, mode coverage guarantees, high sample quality, flexible conditioning.
 
 \textbf{Limitations}: High computational cost, slower inference than GANs, limited financial applications.
+
+\textbf{Recent Advances}: Kong et al. \cite{kong2021diffwave} applied diffusion to audio synthesis showing strong performance on sequential data. Tashiro et al. \cite{tashiro2021csdi} extended diffusion for multivariate time-series imputation. Rasul et al. \cite{rasul2021autoregressive} demonstrated probabilistic forecasting capabilities, establishing diffusion as viable for temporal modeling.
+
+\subsubsection{Financial Synthetic Data Generation}
+
+\textbf{Privacy-Preserving Synthesis}: Jordon et al. \cite{jordon2018pate} developed PATE-GAN for privacy-preserving synthetic data with differential privacy guarantees. Xu et al. \cite{xu2019modeling} proposed DP-WGAN for financial data synthesis maintaining privacy while preserving utility.
+
+\textbf{Evaluation Frameworks}: Yoon et al. \cite{yoon2019time} established evaluation protocols for time-series generation including discriminative and predictive scores. Esteban et al. \cite{esteban2017real} compared real and synthetic medical time-series, providing methodological foundations applicable to finance.
+
+\textbf{Financial Applications}: Takahashi et al. \cite{takahashi2019modeling} applied GANs to foreign exchange rate generation. Koshiyama et al. \cite{koshiyama2021fingan} developed FinGAN specifically for financial market simulation with regulatory compliance considerations.
 
 \subsubsection{Comparative Studies and Gaps}
 
@@ -920,6 +932,74 @@ Diffusion Models offer unique advantages:
 \textbf{Recommendation}: Combine both models - TimeGAN for primary generation, Diffusion for validation and diversity. Benefits include reduced bias, distributional validation, increased diversity, and failure detection.
 
 \textbf{Strategy}: Train both independently, generate primarily from TimeGAN, validate with Diffusion KS statistics, investigate degradation, periodically add Diffusion samples.
+
+\subsection{Limitations and Threats to Validity}
+
+\subsubsection{Experimental Design Limitations}
+
+\textbf{Pre-existing TimeGAN Results}: Our comparison utilizes pre-existing TimeGAN evaluation results rather than training both models identically under controlled conditions. This introduces potential confounds including different training configurations, hyperparameter optimization strategies, implementation variations, and computational resource allocations. While we maintain consistent evaluation protocols, the performance gap may partially reflect these implementation differences.
+
+\textbf{Limited Asset Coverage}: Our study evaluates only 12 assets (6 indices, 5 stocks, 1 cryptocurrency), representing a fraction of global financial markets. Notable omissions include commodities (gold, oil, agricultural products), bonds and fixed income securities, foreign exchange pairs, emerging market equities, and alternative cryptocurrencies. Geographic coverage emphasizes US and developed Asian markets, with limited representation from Europe, Latin America, Africa, and emerging economies.
+
+\textbf{Evaluation Metrics}: Our evaluation focuses primarily on statistical fidelity metrics (mean difference, KS statistics) without assessing downstream task performance. We do not evaluate forecasting accuracy using synthetic data, trading strategy profitability, portfolio optimization quality, or risk model calibration accuracy. Financial-specific metrics absent include volatility clustering preservation, tail risk distribution accuracy, correlation structure fidelity, market microstructure features, and regime transition modeling.
+
+\subsubsection{Technical Constraints}
+
+\textbf{Computational Limitations}: GPU memory constraints (2GB VRAM) limited model capacity, potentially preventing optimal architecture sizes. Training epochs may be insufficient for complete convergence, particularly for Diffusion Models requiring extensive iterations. Limited computational budget restricted comprehensive hyperparameter search, potentially leaving performance gains unrealized.
+
+\textbf{Sequence Length}: Fixed 24-day windows represent an arbitrary choice validated only empirically. Longer market cycles (seasonal patterns, economic cycles) exceeding 24 days may not be fully captured. Shorter intraday patterns are entirely absent due to daily data granularity. The impact of sequence length on generation quality remains unexplored.
+
+\textbf{Feature Set}: Limited to six basic features (OHLC, Volume, Returns) for TimeGAN comparison. Extended technical indicators used for Diffusion training not compared. Missing features include order book depth, bid-ask spreads, trading volume distribution, news sentiment, and macroeconomic indicators.
+
+\subsubsection{Generalizability Concerns}
+
+\textbf{Market Regime Dependency}: Training data (2015-2024) captures primarily bull market conditions with brief COVID-19 volatility. Performance during prolonged bear markets, stagflation periods, or financial crises remains uncertain. The dataset includes limited examples of extreme events, potentially biasing models toward normal conditions.
+
+\textbf{Asset Type Specificity}: TimeGAN training failure on Bitcoin demonstrates limited robustness to extreme volatility. Untested asset classes (derivatives, options, futures, structured products) may exhibit different generation quality. Currency pairs with distinct statistical properties not evaluated.
+
+\textbf{Data Quality}: Yahoo Finance data may contain errors, missing values, or corporate action misalignments. Survivorship bias affects asset selection (only currently traded instruments included). Delisting, mergers, and bankruptcies not represented. Intraday volatility and market microstructure entirely absent from daily data.
+
+\subsubsection{Statistical Validity}
+
+\textbf{Sample Size}: Only 11 assets available for direct TimeGAN-Diffusion comparison (BTC-USD excluded). Limited statistical power for detecting category-specific effects or interaction terms. Multiple testing across assets and features without correction may inflate Type I error rates.
+
+\textbf{Independence Assumptions}: Assets exhibit strong market correlations, violating paired t-test independence assumptions. Shared market trends (broad bull market) may influence all results similarly. Cross-asset dependencies not modeled in statistical tests.
+
+\textbf{Temporal Dependencies}: Training, validation, and test sets from sequential time periods may not represent independent samples. Autocorrelation in asset returns violates standard statistical test assumptions. Regime changes between splits could confound results.
+
+\subsection{Future Research Directions}
+
+\subsubsection{Model Improvements}
+
+\textbf{Hybrid Architectures}: Develop models combining TimeGAN's supervised temporal loss with Diffusion's training stability. Investigate multi-model ensembles with weighted generation strategies based on asset characteristics and target metrics. Implement adaptive model selection algorithms that route assets to optimal generators based on volatility, autocorrelation, and distributional properties.
+
+\textbf{Advanced Architectures}: Replace TimeGAN's GRU backbone with Transformer encoders to capture longer-range dependencies. Develop conditional generation frameworks enabling regime-specific synthesis (bull/bear markets, high/low volatility). Implement multi-resolution modeling capturing patterns across minute, hourly, daily, and weekly scales simultaneously.
+
+\textbf{Training Enhancements}: Apply progressive training starting with short sequences and gradually increasing length. Implement curriculum learning proceeding from stable assets (indices) to volatile assets (crypto). Explore meta-learning approaches for few-shot adaptation to new assets with limited historical data.
+
+\subsubsection{Expanded Evaluation}
+
+\textbf{Downstream Task Validation}: Evaluate trading strategy backtesting performance using synthetic vs. real data. Assess portfolio optimization quality (Sharpe ratio, drawdown) with generated scenarios. Validate risk models (Value-at-Risk, Conditional VaR) calibrated on synthetic data against actual outcomes.
+
+\textbf{Financial-Specific Metrics}: Measure volatility clustering preservation through GARCH model fits. Assess tail risk accuracy via Extreme Value Theory comparisons. Evaluate correlation structure fidelity across assets and time lags. Test market microstructure feature preservation (bid-ask spreads, order flow).
+
+\textbf{Broader Asset Coverage}: Extend evaluation to commodities (precious metals, energy, agriculture). Include fixed income instruments (government bonds, corporate bonds). Test foreign exchange major and exotic pairs. Evaluate emerging market equities and frontier markets. Assess alternative cryptocurrencies and DeFi tokens.
+
+\subsubsection{Practical Applications}
+
+\textbf{Privacy-Preserving Data Sharing}: Implement differential privacy guarantees for synthetic data generation. Enable proprietary trading data synthesis maintaining confidentiality. Ensure regulatory compliance (GDPR, data sharing regulations) while preserving analytical utility.
+
+\textbf{Scenario Generation for Risk Management}: Generate stress testing scenarios for regulatory capital requirements. Simulate rare event distributions (flash crashes, liquidity crises). Enable what-if analysis for policy changes (interest rate shifts, regulatory interventions).
+
+\textbf{Real-Time Deployment}: Develop online learning frameworks adapting to market regime changes. Implement low-latency generation for high-frequency trading applications. Create streaming synthesis for continuous data augmentation.
+
+\subsubsection{Theoretical Foundations}
+
+\textbf{Convergence Analysis}: Establish theoretical convergence guarantees for TimeGAN training dynamics. Derive sample complexity bounds relating dataset size to generation quality. Develop approximation theory characterizing achievable distribution matching accuracy.
+
+\textbf{Interpretability and Explainability}: Investigate which temporal patterns models successfully learn versus fail to capture. Develop feature importance analysis identifying critical components for generation quality. Conduct systematic failure mode analysis understanding when and why models produce unrealistic outputs.
+
+\textbf{Optimal Architecture Design}: Derive principled guidelines for selecting sequence lengths based on asset autocorrelation structure. Establish optimal network depth and width relationships for different volatility regimes. Develop adaptive architectures automatically tuning to data characteristics.
 
 \section{Conclusion}
 \label{sec:conclusion}
