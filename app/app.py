@@ -7,6 +7,7 @@ from flask import Flask, render_template, jsonify
 from config import Config
 from routes import timegan_bp, diffusion_bp, comparison_bp, statistics_bp, technical_bp, recommendations_bp
 from routes.models import models_bp
+from model_server import model_server_bp, model_server
 from data import STATISTICAL_TESTS
 import os
 
@@ -22,6 +23,11 @@ def create_app(config_class=Config):
     app.register_blueprint(technical_bp, url_prefix='/technical')
     app.register_blueprint(recommendations_bp, url_prefix='/recommendations')
     app.register_blueprint(models_bp, url_prefix='/models')
+    app.register_blueprint(model_server_bp)  # Model serving endpoints
+    
+    # Initialize model server on startup
+    with app.app_context():
+        model_server.load_models()
     
     @app.route('/')
     def index():

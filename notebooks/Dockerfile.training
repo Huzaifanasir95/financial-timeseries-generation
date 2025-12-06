@@ -1,0 +1,53 @@
+# Dockerfile for Training Environment (CPU-only for basic demonstration)
+# For full GPU support, use nvidia/cuda base images
+
+FROM python:3.9-slim
+
+LABEL maintainer="financial-timeseries-generation"
+LABEL description="Training environment for TimeGAN and Diffusion models (CPU)"
+
+# Set working directory
+WORKDIR /workspace
+
+# Environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    JUPYTER_ENABLE_LAB=yes
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    git \
+    wget \
+    curl \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY ../requirements.txt /workspace/
+
+# Install Python packages
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir jupyter jupyterlab ipywidgets
+
+# Copy notebooks and source code
+COPY . /workspace/
+
+# Create directories
+RUN mkdir -p /workspace/data/raw \
+             /workspace/data/processed \
+             /workspace/data/synthetic \
+             /workspace/models/saved_models \
+             /workspace/outputs/figures \
+             /workspace/outputs/results
+
+# Expose Jupyter port
+EXPOSE 8888
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8888/api || exit 1
+
+# Start Jupyter Lab
+CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=''", "--NotebookApp.password=''"]

@@ -9,10 +9,13 @@ services:
     environment:
       - FLASK_ENV=production
       - FLASK_APP=app.py
+      - MODEL_SERVER_ENABLED=true
     volumes:
       # Mount static files for images (read-only)
       - ./static:/app/static:ro
       - ./templates:/app/templates:ro
+      # Mount models directory for inference (REQUIRED for real models)
+      - D:\SEM7\Generative AI\Project\financial-timeseries-generation\models:/app/models:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
@@ -22,6 +25,14 @@ services:
       start_period: 10s
     networks:
       - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
 
 networks:
   app-network:

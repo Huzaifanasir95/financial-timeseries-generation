@@ -1,0 +1,80 @@
+# Full Stack Docker Compose
+# Includes: Web App + Model Server + Jupyter Training Environment
+
+version: '3.8'
+
+services:
+  # Web Application + Model Serving
+  web:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: financial-timeseries-web
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_APP=app.py
+      - MODEL_SERVER_ENABLED=true
+    volumes:
+      - ./app/static:/app/static:ro
+      - ./app/templates:/app/templates:ro
+      - ./models:/app/models:ro
+      - ./data:/app/data:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - app-network
+    depends_on:
+      - jupyter
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  # Jupyter Lab Training Environment (CPU-only)
+  jupyter:
+    build:
+      context: ./notebooks
+      dockerfile: Dockerfile.training
+    container_name: financial-timeseries-jupyter
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    volumes:
+      - ./notebooks:/workspace/notebooks
+      - ./data:/workspace/data
+      - ./models:/workspace/models
+      - ./outputs:/workspace/outputs
+      - ./src:/workspace/src
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/api"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  model-data:
+    driver: local
+  jupyter-data:
+    driver: local
