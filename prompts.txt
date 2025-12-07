@@ -1,0 +1,241 @@
+# Prompts for Understanding Core Concepts of Financial Time Series Generation Assignment
+
+## 1. Synthetic Data Generation Fundamentals
+- What are the key challenges in generating synthetic financial time series data?
+- How does synthetic data generation differ from traditional data augmentation techniques?
+- Why is synthetic data important for financial modeling and risk assessment?
+- What are the main types of financial time series data (stocks, crypto, commodities, indices)?
+- How does data scarcity affect financial modeling and why synthetic data helps?
+- What are the differences between univariate and multivariate time series generation?
+- How do you ensure synthetic data maintains realistic volatility patterns?
+- What role does domain knowledge play in synthetic financial data generation?
+- How do you balance fidelity and diversity in synthetic data generation?
+- What are the computational challenges of generating long time series sequences?
+
+## 2. Generative Adversarial Networks (GANs) in Time Series
+- How does TimeGAN architecture handle temporal dependencies in financial data?
+- What are the advantages of using GANs for time series generation compared to other methods?
+- How do the generator and discriminator components work together in TimeGAN?
+- What is the role of the embedding network in TimeGAN?
+- How does TimeGAN handle different sequence lengths in financial data?
+- What are the training instabilities common in GANs for time series?
+- How do conditional GANs improve time series generation?
+- What evaluation metrics are specific to GAN-generated time series?
+- How do you prevent mode collapse in financial time series GANs?
+- What are the memory requirements for training TimeGAN on large datasets?
+
+## 3. Diffusion Models for Time Series
+- Explain the forward and reverse diffusion processes in the context of financial data.
+- How do diffusion models ensure temporal consistency in generated sequences?
+- What are the computational trade-offs between diffusion models and GANs for time series?
+- How does the denoising process work in diffusion models for time series?
+- What are the advantages of diffusion models for financial applications?
+- How do you choose the noise schedule for financial time series diffusion?
+- What are the sampling strategies for diffusion models in time series?
+- How do diffusion models handle conditional generation in finance?
+- What are the limitations of diffusion models for real-time applications?
+- How do you evaluate the quality of diffusion-generated financial sequences?
+
+## 4. Statistical Validation and Evaluation
+- What statistical tests should be used to validate synthetic financial time series?
+- How do you measure the quality of synthetic data in terms of distribution matching?
+- What metrics are most important for evaluating generative models in finance?
+- How do you perform hypothesis testing on synthetic vs real data distributions?
+- What is the role of Kolmogorov-Smirnov test in financial data validation?
+- How do you assess autocorrelation preservation in synthetic time series?
+- What are the limitations of statistical tests for time series validation?
+- How do you combine multiple evaluation metrics for comprehensive assessment?
+- What is the importance of cross-validation in synthetic data evaluation?
+- How do you handle non-stationary financial data in statistical validation?
+
+## 5. Forecasting Model Integration
+- Why combine generative models with forecasting evaluation?
+- How do different forecasting models (ARIMA, LSTM, Prophet) respond to synthetic data?
+- What insights can forecasting performance provide about synthetic data quality?
+- How do you set up forecasting experiments with synthetic data?
+- What are the differences in forecasting accuracy between real and synthetic data?
+- How does synthetic data affect the training of forecasting models?
+- What role does forecasting play in validating generative models?
+- How do you compare forecasting performance across different generative models?
+- What are the challenges of using synthetic data for forecasting validation?
+- How do you interpret forecasting results to improve generative models?
+
+## 6. Practical Applications and Limitations
+- What are the real-world applications of synthetic financial time series?
+- What are the ethical considerations when using synthetic data in finance?
+- How do you address privacy concerns when generating synthetic financial data?
+- What are the regulatory implications of using synthetic data in finance?
+- How do synthetic data help in stress testing financial systems?
+- What are the limitations of synthetic data for risk modeling?
+- How do you ensure synthetic data doesn't introduce new biases?
+- What are the deployment challenges for synthetic data generation systems?
+- How do synthetic data applications differ across financial sectors?
+- What are the cost-benefit considerations of synthetic data adoption?
+
+## 7. Model Comparison and Selection
+- What criteria should be used to compare TimeGAN and diffusion models?
+- How do you determine which generative model is better for specific financial assets?
+- What role does domain expertise play in evaluating synthetic data quality?
+- How do you perform fair comparisons between different generative architectures?
+- What are the trade-offs between model complexity and generation quality?
+- How do you select evaluation metrics for model comparison?
+- What is the role of human evaluation in model selection?
+- How do you handle model selection for different financial data characteristics?
+- What are the best practices for benchmarking generative models?
+- How do you update model selection criteria based on new requirements?
+
+## 8. Implementation and Deployment Considerations
+- What are the computational requirements for training generative models on financial data?
+- How do you handle different types of financial assets (stocks, crypto, commodities) in generation?
+- What are the best practices for deploying synthetic data generation in production?
+- How do you optimize model training for large-scale financial datasets?
+- What are the data preprocessing requirements for generative models?
+- How do you handle missing data in financial time series generation?
+- What are the monitoring requirements for deployed generative models?
+- How do you ensure reproducibility in synthetic data generation?
+- What are the security considerations for generative model deployment?
+- How do you scale synthetic data generation for enterprise applications?
+
+## 9. Time Series Characteristics and Preprocessing
+- What are the key characteristics of financial time series data?
+- How do you handle stationarity in financial time series generation?
+- What preprocessing steps are necessary for financial data before generation?
+- How do seasonality and trends affect synthetic data generation?
+- What are the challenges of handling high-frequency financial data?
+- How do you normalize financial time series for generative models?
+- What feature engineering techniques are useful for financial time series?
+- How do you handle outliers and anomalies in financial data preprocessing?
+- What are the temporal resolution considerations for synthetic generation?
+- How do you validate preprocessing steps for generative model training?
+
+## 10. Advanced Model Architectures and Techniques
+- What are the latest advancements in generative models for time series?
+- How do transformer-based models compare to GANs for financial data?
+- What are the benefits of hybrid generative approaches?
+- How do you incorporate attention mechanisms in time series generation?
+- What are the applications of variational autoencoders in finance?
+- How do you handle multi-modal financial data in generation?
+- What are the techniques for conditional time series generation?
+- How do you implement ensemble methods for generative models?
+- What are the self-supervised learning approaches for financial time series?
+- How do you adapt pre-trained models for financial applications?
+
+## 11. Risk Management and Regulatory Applications
+- How do synthetic data help in financial risk assessment?
+- What are the regulatory requirements for synthetic data in finance?
+- How do you use synthetic data for portfolio stress testing?
+- What are the applications of synthetic data in credit risk modeling?
+- How do regulatory frameworks view synthetic data generation?
+- What are the compliance challenges with synthetic financial data?
+- How do you ensure synthetic data meets regulatory standards?
+- What are the auditability requirements for synthetic data systems?
+- How do synthetic data applications differ in banking vs investment firms?
+- What are the legal considerations for synthetic data ownership?
+
+## 12. Future Directions and Research Opportunities
+- What are the emerging trends in generative AI for financial time series?
+- How might quantum computing impact synthetic data generation?
+- What are the research gaps in financial time series generation?
+- How do you incorporate macroeconomic factors in generation?
+- What are the potential impacts of generative AI on financial markets?
+- How do you address the environmental impact of training large generative models?
+- What are the interdisciplinary opportunities in financial generative AI?
+- How do you foster collaboration between academia and industry in this field?
+- What are the educational needs for future financial AI practitioners?
+- How do you stay updated with rapidly evolving generative techniques?
+
+## 13. Data Visualization and Interpretation
+- What visualization techniques are most effective for financial time series data?
+- How do you visualize the differences between real and synthetic financial data?
+- What are the best practices for plotting time series forecasting results?
+- How do you create meaningful visualizations for model evaluation metrics?
+- What role does visualization play in interpreting generative model outputs?
+- How do you handle large-scale time series data in visualization?
+- What are the challenges of visualizing multivariate financial time series?
+- How do you use statistical plots to assess synthetic data quality?
+- What interactive visualization tools are useful for financial data analysis?
+- How do you communicate synthetic data insights to non-technical stakeholders?
+
+## 14. Performance Optimization and Scaling
+- What techniques can optimize training time for generative models?
+- How do you handle memory constraints when training on large financial datasets?
+- What are the strategies for distributed training of generative models?
+- How do you implement model compression for deployment efficiency?
+- What are the trade-offs between model size and generation quality?
+- How do you optimize inference speed for real-time applications?
+- What are the best practices for hyperparameter tuning in generative models?
+- How do you scale synthetic data generation for enterprise use cases?
+- What are the computational bottlenecks in financial time series generation?
+- How do you balance computational cost with model performance?
+
+## 15. Case Studies and Real-World Examples
+- What are successful case studies of synthetic data in finance?
+- How has synthetic data been used in algorithmic trading?
+- What examples exist of synthetic data in risk management?
+- How do financial institutions use synthetic data for compliance testing?
+- What are the case studies of generative models in portfolio optimization?
+- How has synthetic data impacted credit scoring models?
+- What real-world examples demonstrate the value of synthetic financial data?
+- How do hedge funds use synthetic data for strategy development?
+- What are the documented failures or challenges in synthetic data applications?
+- How do academic research projects translate to industry applications?
+
+## 16. Integration with Traditional Financial Models
+- How do generative models complement traditional time series forecasting?
+- What are the integration points between synthetic data and econometric models?
+- How do you combine generative models with Monte Carlo simulations?
+- What are the synergies between synthetic data and statistical arbitrage?
+- How do generative models enhance traditional risk models?
+- What are the challenges of integrating synthetic data with existing systems?
+- How do you validate synthetic data against established financial benchmarks?
+- What role does synthetic data play in backtesting trading strategies?
+- How do generative models support traditional portfolio theory?
+- What are the best practices for hybrid modeling approaches?
+
+## 17. Ethical AI and Responsible Generation
+- What are the ethical implications of generating synthetic financial data?
+- How do you ensure fairness in synthetic data generation?
+- What are the privacy-preserving techniques for financial data synthesis?
+- How do you address potential misuse of synthetic financial data?
+- What are the transparency requirements for generative AI in finance?
+- How do you handle bias in synthetic data generation?
+- What are the accountability frameworks for synthetic data systems?
+- How do you ensure synthetic data doesn't amplify market inequalities?
+- What are the societal impacts of widespread synthetic data adoption?
+- How do you balance innovation with responsible AI practices in finance?
+
+## 18. Technical Implementation Details
+- What programming frameworks are best for implementing generative models?
+- How do you set up data pipelines for financial time series generation?
+- What are the best practices for version control in generative model development?
+- How do you implement logging and monitoring for generative model training?
+- What are the considerations for containerization of generative models?
+- How do you handle data versioning in synthetic generation workflows?
+- What are the testing strategies for generative model implementations?
+- How do you implement continuous integration for generative model development?
+- What are the debugging techniques for generative model training issues?
+- How do you document and maintain generative model codebases?
+
+## 19. Market Impact and Economic Analysis
+- How might synthetic data generation affect financial market dynamics?
+- What are the potential economic benefits of synthetic data adoption?
+- How do you assess the market impact of generative AI in finance?
+- What are the implications for market liquidity with synthetic data?
+- How might synthetic data influence asset pricing models?
+- What are the macroeconomic effects of widespread synthetic data use?
+- How do you evaluate the cost-effectiveness of synthetic data solutions?
+- What are the potential disruptions to traditional financial services?
+- How might synthetic data change investment decision-making processes?
+- What are the long-term economic consequences of generative AI in finance?
+
+## 20. Cross-Disciplinary Applications
+- How can synthetic financial data benefit other domains?
+- What are the applications of financial generative models in healthcare?
+- How might synthetic data techniques apply to climate modeling?
+- What cross-disciplinary insights can financial time series generation provide?
+- How do generative models from finance apply to supply chain optimization?
+- What are the potential applications in energy market modeling?
+- How can financial synthetic data techniques help in epidemiology?
+- What interdisciplinary collaborations are emerging in generative AI?
+- How do financial time series models inform other time-dependent systems?
+- What are the broader societal benefits of financial generative AI research?
