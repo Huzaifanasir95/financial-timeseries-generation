@@ -515,12 +515,12 @@ This project is for academic and research purposes.
 
 ## Authors
 
-- **Huzaifa Nasir** - i221053@nu.edu.pk
-- **Maaz Ali** - i221042@nu.edu.pk
+- **Huzaifa Nasir**
+- **Maaz Ali** 
 
 **Institution**: National University of Computer and Emerging Sciences (FAST NUCES)  
 **Department**: Computer Science  
-**Date**: December 2024
+**Date**: December 2025
 
 ## Acknowledgments
 
