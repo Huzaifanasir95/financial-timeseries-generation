@@ -32,7 +32,7 @@
 - What are the advantages of diffusion models for financial applications?
 - How do you choose the noise schedule for financial time series diffusion?
 - What are the sampling strategies for diffusion models in time series?
-- How do diffusion models handle conditional generation in finance?
+- How do diffusion models handle conditional generation in finance?  he
 - What are the limitations of diffusion models for real-time applications?
 - How do you evaluate the quality of diffusion-generated financial sequences?
 
