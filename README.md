@@ -1,17 +1,227 @@
-# Synthetic Financial Time-Series Generation
+# Financial Time-Series Generation: TimeGAN vs Diffusion Models
+![Python](https://img.shields.io/badge/Python-3.8+-blue.svg) ![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg) ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.12+-orange.svg) ![License](https://img.shields.io/badge/License-Academic-yellow.svg) ![Status](https://img.shields.io/badge/Status-Complete-green.svg)
 
-A comprehensive comparative study of TimeGAN vs Diffusion Models for synthetic data generation and evaluation of forecasting models (ARIMA, LSTM, Prophet) across 25 financial assets.
+> **Comprehensive comparative study** of **TimeGAN** and **Diffusion Models** for synthetic financial data generation, with forecasting baseline evaluation across **25 financial assets** (indices, stocks, cryptocurrencies, commodities).
 
-## Project Overview
+Implementation of state-of-the-art **generative models** for financial time-series, achieving **54% better distribution matching with TimeGAN** (p=0.0004, Cohen's d=-2.82). Includes production-ready **Flask web application** with interactive dashboards and REST API.
 
-This research project addresses two fundamental challenges in quantitative finance:
+## 📋 Table of Contents
+- [Overview](#-overview)
+- [Key Findings](#-key-findings)
+- [Features](#-features)
+- [Dataset](#-dataset)
+- [Models Implemented](#-models-implemented)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Project Structure](#-project-structure)
+- [Results](#-results)
+- [Web Application](#-web-application)
+- [Evaluation Metrics](#-evaluation-metrics)
+- [Practical Recommendations](#-practical-recommendations)
+- [Limitations & Future Work](#-limitations--future-work)
+- [Citation](#-citation)
+- [Authors](#-authors)
+- [License](#-license)
 
-1. **Synthetic Data Generation**: Comparing TimeGAN vs Diffusion Models for creating realistic financial time-series data
-2. **Price Forecasting**: Evaluating 5 models (ARIMA, LSTM, Prophet, TimeGAN, DDPM) for trading and prediction tasks
+## 🎯 Overview
 
-**Key Finding**: TimeGAN outperforms Diffusion Models by 54% for synthetic data generation (p=0.0004), while ARIMA dominates cryptocurrency forecasting with R²=0.975. Critically, generative models (TimeGAN, DDPM) excel at distribution matching but fail at forecasting (negative R² scores).
+This research project addresses two fundamental challenges in **quantitative finance**:
 
-## Project Structure
+### 1. **Synthetic Data Generation** (Primary Focus)
+Systematic comparison of **TimeGAN** vs **Diffusion Models** for generating realistic financial time-series data with rigorous statistical validation.
+
+### 2. **Price Forecasting** (Secondary Focus)
+Comprehensive evaluation of **5 models** (ARIMA, LSTM, Prophet, TimeGAN, DDPM) establishing that generative models excel at distribution matching but fail at forecasting tasks.
+
+### Key Contributions
+✅ **First systematic comparison** of TimeGAN vs Diffusion on multi-asset financial data  
+✅ **Statistical validation** with paired t-tests, Cohen's d, KS tests  
+✅ **Proof that generative models ≠ forecasting models** (negative R² demonstrated)  
+✅ **Production-ready Flask web application** with interactive dashboards  
+✅ **25 trained models** ready for deployment (11 TimeGAN + 12 Diffusion + 2 baselines)  
+
+## 🏆 Key Findings
+
+### TimeGAN vs Diffusion Models
+
+| Metric | TimeGAN | Diffusion | Winner |
+|--------|---------|-----------|---------|
+| **Mean Distribution Difference** | 0.067 ± 0.030 | 0.134 ± 0.017 | 🥇 **TimeGAN (54% better)** |
+| **Median Performance** | 0.059 | 0.131 | 🥇 **TimeGAN (55% better)** |
+| **Assets Won** | **9/11 (82%)** | 2/11 (18%) | 🥇 **TimeGAN** |
+| **Statistical Significance** | p = 0.0004 | - | Highly significant*** |
+| **Effect Size (Cohen's d)** | -2.82 | - | Large effect |
+
+**Statistical Conclusion**: TimeGAN significantly outperforms Diffusion Models for financial synthetic data generation (t=-4.59, p=0.0004, d=-2.82).
+
+### Forecasting Results (Cryptocurrency)
+
+| Model | MAE | RMSE | R² | Best For |
+|-------|-----|------|----|---------| 
+| **ARIMA** 🥇 | 0.00440 | 0.00598 | **0.9751** | Short-term prediction |
+| **LSTM** 🥈 | 0.00437 | 0.00600 | **0.8082** | Non-linear patterns |
+| Prophet | 0.00635 | 0.00833 | -0.942 | ❌ Poor for crypto |
+| **TimeGAN** | - | - | **-1.72** | ❌ Unsuitable for forecasting |
+| **Diffusion** | - | - | **-4.24** | ❌ Unsuitable for forecasting |
+
+**Critical Insight**: Generative models have **negative R²**, performing worse than predicting the mean. They are designed for **distribution matching**, not **forecasting**.
+
+## 🌟 Features
+
+### 1. **Generative Models**
+- **TimeGAN**: 5-component architecture (Embedder, Recovery, Generator, Supervisor, Discriminator)
+  - 20,000 training iterations
+  - 48-step sequence length
+  - GPU-optimized (CUDA + mixed precision)
+  - 11 trained models (indices, stocks, crypto)
+  
+- **Diffusion Models (DDPM)**: Residual networks with time conditioning
+  - 1000-step noise schedule
+  - 500 epoch training
+  - Forward/reverse diffusion processes
+  - 12 trained models
+
+### 2. **Forecasting Baselines**
+- **ARIMA**: Auto-parameter selection with ADF stationarity testing
+- **LSTM**: 2-layer architecture with dropout regularization
+- **Prophet**: Meta's automatic seasonality detection
+
+### 3. **Comprehensive Evaluation**
+- **Statistical Tests**: KS test, paired t-test, Cohen's d effect size
+- **Distribution Metrics**: Mean/std difference, autocorrelation preservation
+- **Forecasting Metrics**: MAE, RMSE, R², MAPE, direction accuracy
+
+### 4. **Production-Ready Application**
+- **Flask Web App**: Interactive dashboards with real-time model comparison
+- **REST API**: Programmatic access to model results
+- **Visualization**: 40+ figures (training curves, confusion matrices, Q-Q plots)
+
+### 5. **Reproducible Research**
+- All models, scalers, and parameters saved
+- Detailed training logs and evaluation results
+- Docker support for easy deployment
+
+## 📊 Dataset
+
+### Assets Analyzed (25 Total)
+
+**📈 Indices (7)**:
+- **US**: S&P 500 (^GSPC), NASDAQ (^IXIC), Dow Jones (^DJI)
+- **International**: FTSE 100 (^FTSE), Nikkei 225 (^N225), Hang Seng (^HSI), DAX (^GDAXI)
+
+**💻 Technology Stocks (5)**:
+- Apple (AAPL), Microsoft (MSFT), Google (GOOGL), Amazon (AMZN), Tesla (TSLA)
+
+**🏢 Traditional Stocks (6)**:
+- JPMorgan (JPM), Exxon (XOM), Johnson & Johnson (JNJ), Visa (V), Walmart (WMT), Procter & Gamble (PG)
+
+**₿ Cryptocurrencies (5)**:
+- Bitcoin (BTC-USD), Ethereum (ETH-USD), Binance Coin (BNB-USD), Solana (SOL-USD), Cardano (ADA-USD)
+
+**🥇 Commodities (2)**:
+- Gold (GC=F), Crude Oil (CL=F)
+
+### Data Characteristics
+
+| Attribute | Value |
+|-----------|-------|
+| **Timespan** | 2015-01-05 to 2024-12-30 (10 years) |
+| **Frequency** | Daily (business days) |
+| **Total Samples** | 2,443 - 3,651 rows per asset |
+| **Features per Asset** | 108 technical indicators |
+| **Train Split** | 70% (~1,700-2,550 samples) |
+| **Validation Split** | 15% (~365-550 samples) |
+| **Test Split** | 15% (~365-550 samples) |
+| **Stationarity** | All stationary (ADF p < 0.05) |
+| **Data Source** | yfinance API |
+
+### Feature Engineering (108 Indicators)
+
+**Price-Based (8)**: Open, High, Low, Close, Volume, Returns, Log Returns, Price Range
+
+**Trend Indicators (14)**: SMA (5/10/20/50), EMA (5/10/20), DEMA, TEMA, WMA, TRIMA
+
+**Momentum Indicators (15)**: RSI, ROC, Stochastic K/D, Williams %R, CCI, MFI, Ultimate Oscillator
+
+**Volatility Indicators (12)**: ATR, Bollinger Bands (Upper/Middle/Lower/Width), Historical Volatility, Keltner Channels, Donchian Channels
+
+**Volume Indicators (10)**: OBV, Volume SMA, Volume ROC, MFI, CMF, VWAP, PVT
+
+**Trend Strength (8)**: MACD, MACD Signal, MACD Histogram, ADX, +DI, -DI, Aroon Up/Down
+
+**Ichimoku Cloud (5)**: Tenkan-sen, Kijun-sen, Senkou Span A/B, Chikou Span
+
+**Other (36)**: Lagged features, rolling statistics, technical patterns
+
+## 🤖 Models Implemented
+
+### Generative Models
+
+#### TimeGAN (Time-series GAN) - **Winner**
+```
+Architecture: 5 Neural Networks
+  ├── Embedder: Maps real data → latent space
+  ├── Recovery: Maps latent space → real data
+  ├── Generator: Creates synthetic latent representations
+  ├── Supervisor: Enforces temporal consistency
+  └── Discriminator: Distinguishes real vs synthetic
+
+Training Configuration:
+  • Iterations: 20,000
+  • Batch Size: 128 (GPU-optimized)
+  • Hidden Dim: 128
+  • Sequence Length: 48
+  • Learning Rate: 5×10⁻⁴
+  • Loss: Combined adversarial + supervised + reconstruction
+  • Time per Asset: ~18 minutes (GPU)
+```
+
+**Performance**:
+- **Excellent** (6 assets): HSI, AMZN, FTSE, DJI, N225, IXIC
+- **Good** (4 assets): AAPL, MSFT, TSLA, GSPC
+- **Fair** (1 asset): GOOGL
+
+#### Diffusion Models (DDPM)
+```
+Architecture: Residual Denoising Network
+  • Forward Process: Gradually adds Gaussian noise (1000 steps)
+  • Reverse Process: Learns to denoise (predict noise)
+  • Time Conditioning: Sinusoidal embeddings
+  • Network: Multi-head attention + residual blocks
+
+Training Configuration:
+  • Epochs: 500
+  • Diffusion Steps: 1000
+  • Beta Schedule: Linear (1×10⁻⁴ to 0.02)
+  • Architecture: Transformer-inspired
+  • Time per Asset: ~2 hours (GPU required)
+```
+
+**Performance**:
+- All 11 assets rated **Fair** (KS statistic: 0.32-0.48)
+- Better theoretical guarantees, but slower convergence
+
+### Forecasting Models
+
+#### ARIMA - **Best for Crypto Forecasting**
+- **Model**: Auto-ARIMA with automatic (p,d,q) selection
+- **R² Score**: 0.9751 (explains 97.51% variance)
+- **Strengths**: Interpretable, fast, excellent for stationary series
+- **Weaknesses**: Linear assumptions, poor for regime changes
+
+#### LSTM - **Best for Non-Linear Patterns**
+- **Architecture**: 2-layer LSTM (64→32 units) + Dropout (0.2)
+- **R² Score**: 0.8082 (good performance)
+- **Strengths**: Captures complex patterns, handles multiple features
+- **Weaknesses**: Requires more data, computationally expensive
+
+#### Prophet - **Best for Seasonal Data**
+- **Model**: Meta's additive decomposition (trend + seasonality + holidays)
+- **R² Score**: -0.942 (poor for crypto)
+- **Strengths**: Automatic seasonality, handles missing data
+- **Weaknesses**: Struggles with high volatility, crypto markets
+
+## 📁 Project Structure
 
 ```plaintext
 financial-timeseries-generation/
@@ -92,40 +302,7 @@ financial-timeseries-generation/
 - **Metrics**: MAE, RMSE, R², Direction Accuracy, MAPE
 - **Objective**: Prove task-specific model selection (generative ≠ predictive)
 
-## Dataset
 
-### Assets Analyzed (25 total)
-
-**Indices (7)**:
-- US: S&P 500 (GSPC), NASDAQ (IXIC), Dow Jones (DJI)
-- International: FTSE 100, Nikkei 225 (N225), Hang Seng (HSI), DAX (GDAXI)
-
-**Technology Stocks (5)**:
-- AAPL, MSFT, GOOGL, AMZN, TSLA
-
-**Traditional Stocks (6)**:
-- JPM, XOM, JNJ, V, WMT, PG
-
-**Cryptocurrencies (5)**:
-- BTC-USD, ETH-USD, BNB-USD, SOL-USD, ADA-USD
-
-**Commodities (2)**:
-- Gold (GC=F), Crude Oil (CL=F)
-
-### Data Characteristics
-
-- **Timespan**: 2015-01-05 to 2024-12-30 (10 years)
-- **Frequency**: Daily
-- **Features**: 108 technical indicators per asset
-  - Price-based: OHLCV, Returns, Log Returns, Price Range
-  - Trend: SMA (5/10/20/50), EMA (5/10/20)
-  - Momentum: RSI, ROC, Stochastic, Williams %R
-  - Volatility: ATR, Bollinger Bands, Historical Volatility, Keltner Channels
-  - Volume: OBV, Volume SMA, Volume ROC, MFI, CMF
-  - Trend Strength: MACD, ADX, Ichimoku
-- **Splits**: Train (70%), Validation (15%), Test (15%)
-- **Stationarity**: All assets stationary (ADF test p < 0.05)
-- **Total samples**: 2,443 - 3,651 rows depending on asset
 
 ## Key Results
 
