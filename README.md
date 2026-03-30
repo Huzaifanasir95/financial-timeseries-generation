@@ -3,7 +3,7 @@
 
 > **Comprehensive comparative study** of **TimeGAN** and **Diffusion Models** for synthetic financial data generation, with forecasting baseline evaluation across **25 financial assets** (indices, stocks, cryptocurrencies, commodities).
 
-Implementation of state-of-the-art **generative models** for financial time-series, achieving **54% better distribution matching with TimeGAN** (p=0.0004, Cohen's d=-2.82). Includes production-ready **Flask web application** with interactive dashboards and REST API.
+Implementation of **generative models** for financial time-series, achieving **54% better distribution matching with TimeGAN** (p=0.0004, Cohen's d=-2.82). Includes production-ready **Flask web application** with interactive dashboards and REST API.
 
 ## 📋 Table of Contents
 - [Overview](#-overview)
